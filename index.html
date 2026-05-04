@@ -13,11 +13,11 @@
     --ink-soft: #2a2f37;
     --paper: #f5f1ea;
     --paper-warm: #ede6d8;
-    --line: #1a1d22;
     --accent: #c8553d;
     --accent-2: #588b8b;
     --gold: #d4a24c;
     --muted: #6b6862;
+    --kid: #d96a8d;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -26,7 +26,6 @@
     background: var(--paper);
     color: var(--ink);
     font-family: 'Inter Tight', sans-serif;
-    font-weight: 400;
     overflow-x: hidden;
     min-height: 100vh;
   }
@@ -50,12 +49,17 @@
     z-index: 2;
   }
 
-  /* ===== Language toggle ===== */
-  .lang-toggle {
+  /* ===== Top controls ===== */
+  .top-controls {
     position: fixed;
     top: 24px;
     right: 24px;
     z-index: 100;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+  .toggle-pill {
     display: flex;
     background: var(--ink);
     border-radius: 999px;
@@ -63,13 +67,13 @@
     box-shadow: 0 6px 24px rgba(14,17,22,.18);
     font-family: 'JetBrains Mono', monospace;
     font-size: 11px;
-    letter-spacing: .15em;
+    letter-spacing: .12em;
   }
-  .lang-toggle button {
+  .toggle-pill button {
     background: transparent;
     border: none;
     color: rgba(245,241,234,.55);
-    padding: 8px 16px;
+    padding: 8px 14px;
     border-radius: 999px;
     cursor: pointer;
     transition: all .25s ease;
@@ -77,14 +81,14 @@
     font-size: inherit;
     letter-spacing: inherit;
     font-weight: 500;
+    white-space: nowrap;
   }
-  .lang-toggle button.active {
+  .toggle-pill button.active {
     background: var(--paper);
     color: var(--ink);
   }
-  .lang-toggle button:not(.active):hover {
-    color: var(--paper);
-  }
+  .toggle-pill.kid button.active { background: var(--kid); color: white; }
+  .toggle-pill button:not(.active):hover { color: var(--paper); }
 
   /* ===== Masthead ===== */
   .masthead {
@@ -115,10 +119,7 @@
     text-align: center;
     white-space: nowrap;
   }
-  .masthead .title b {
-    font-style: normal;
-    font-weight: 700;
-  }
+  .masthead .title b { font-style: normal; font-weight: 700; }
   .live-dot {
     display: inline-block;
     width: 7px; height: 7px;
@@ -149,6 +150,7 @@
   }
   .strap .dots { letter-spacing: .4em; flex: 1; text-align: center; overflow: hidden; }
 
+  /* ===== Grid ===== */
   .grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -157,10 +159,10 @@
   }
   @media (max-width: 980px) {
     .grid { grid-template-columns: 1fr; border-left: none; }
-    .wrap { padding: 32px 20px 60px; }
+    .wrap { padding: 32px 18px 60px; }
     .masthead { grid-template-columns: 1fr; text-align: center; }
     .masthead .right, .masthead .left { text-align: center; }
-    .lang-toggle { top: 12px; right: 12px; }
+    .top-controls { top: 12px; right: 12px; flex-direction: column; align-items: flex-end; gap: 6px; }
     .strap .dots { display: none; }
   }
 
@@ -170,7 +172,6 @@
     padding: 28px 24px 32px;
     background: var(--paper);
     position: relative;
-    transition: background .4s ease;
   }
   @media (max-width: 980px) {
     .card { border-right: none; border-bottom: 1px solid var(--ink); }
@@ -217,12 +218,12 @@
     margin-bottom: 24px;
   }
 
+  /* ===== Big temp + animated icon ===== */
   .temp-block {
     display: flex;
     align-items: flex-start;
     gap: 16px;
     margin: 18px 0 20px;
-    position: relative;
   }
   .temp {
     font-family: 'Fraunces', serif;
@@ -230,7 +231,6 @@
     font-size: 110px;
     line-height: .85;
     letter-spacing: -.05em;
-    color: var(--ink);
   }
   .temp .deg {
     font-size: 42px;
@@ -239,10 +239,10 @@
     color: var(--accent);
   }
   .icon-art {
-    width: 88px;
-    height: 88px;
+    width: 100px;
+    height: 100px;
     flex-shrink: 0;
-    margin-top: 6px;
+    margin-top: 4px;
   }
   .feel {
     font-family: 'JetBrains Mono', monospace;
@@ -260,6 +260,79 @@
     color: var(--ink-soft);
   }
 
+  /* ===== Animated icon styles ===== */
+  .anim-sun-rays {
+    transform-origin: 50px 50px;
+    animation: sunRotate 20s linear infinite;
+  }
+  @keyframes sunRotate { to { transform: rotate(360deg); } }
+
+  .anim-sun-core {
+    transform-origin: 50px 50px;
+    animation: sunPulse 3s ease-in-out infinite;
+  }
+  @keyframes sunPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.08); }
+  }
+
+  .anim-cloud {
+    animation: cloudDrift 6s ease-in-out infinite;
+  }
+  @keyframes cloudDrift {
+    0%, 100% { transform: translateX(0); }
+    50% { transform: translateX(3px); }
+  }
+
+  .anim-raindrop {
+    animation: rainFall 1.4s linear infinite;
+    opacity: 0;
+  }
+  .anim-raindrop:nth-child(2) { animation-delay: .3s; }
+  .anim-raindrop:nth-child(3) { animation-delay: .6s; }
+  .anim-raindrop:nth-child(4) { animation-delay: .9s; }
+  @keyframes rainFall {
+    0%   { transform: translateY(-4px); opacity: 0; }
+    20%  { opacity: 1; }
+    80%  { opacity: 1; }
+    100% { transform: translateY(18px); opacity: 0; }
+  }
+
+  .anim-snow {
+    animation: snowFall 3s linear infinite;
+    transform-origin: center;
+    opacity: 0;
+  }
+  .anim-snow:nth-child(2) { animation-delay: .8s; }
+  .anim-snow:nth-child(3) { animation-delay: 1.6s; }
+  @keyframes snowFall {
+    0%   { transform: translateY(-4px) rotate(0deg); opacity: 0; }
+    20%  { opacity: 1; }
+    80%  { opacity: 1; }
+    100% { transform: translateY(20px) rotate(180deg); opacity: 0; }
+  }
+
+  .anim-bolt {
+    animation: lightning 2.4s ease-in-out infinite;
+    transform-origin: center;
+  }
+  @keyframes lightning {
+    0%, 40%, 100% { opacity: 1; }
+    45%, 50% { opacity: .2; }
+    55% { opacity: 1; }
+    60% { opacity: .3; }
+    65% { opacity: 1; }
+  }
+
+  .anim-fog {
+    animation: fogShift 4s ease-in-out infinite;
+  }
+  @keyframes fogShift {
+    0%, 100% { transform: translateX(0); }
+    50% { transform: translateX(4px); }
+  }
+
+  /* ===== Stats ===== */
   .stats {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -293,6 +366,68 @@
     margin-left: 2px;
   }
 
+  /* ===== Hourly forecast strip ===== */
+  .section-h {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-h::before { content: "›"; color: var(--accent); font-size: 14px; }
+
+  .hourly {
+    display: flex;
+    gap: 0;
+    overflow-x: auto;
+    margin-bottom: 22px;
+    padding-bottom: 8px;
+    border-top: 1px solid var(--ink);
+    border-bottom: 1px dashed rgba(14,17,22,.25);
+    scrollbar-width: thin;
+  }
+  .hourly::-webkit-scrollbar { height: 6px; }
+  .hourly::-webkit-scrollbar-track { background: transparent; }
+  .hourly::-webkit-scrollbar-thumb { background: rgba(14,17,22,.2); border-radius: 3px; }
+
+  .hour {
+    flex: 0 0 56px;
+    text-align: center;
+    padding: 10px 4px 8px;
+    border-right: 1px dashed rgba(14,17,22,.15);
+    position: relative;
+  }
+  .hour:last-child { border-right: none; }
+  .hour.now {
+    background: rgba(200, 85, 61, .08);
+    border-right: 1px solid var(--accent);
+  }
+  .hour .ht {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9.5px;
+    letter-spacing: .1em;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+  .hour.now .ht { color: var(--accent); font-weight: 500; }
+  .hour .hi { font-size: 16px; margin-bottom: 2px; }
+  .hour .hv {
+    font-family: 'Fraunces', serif;
+    font-size: 17px;
+    font-weight: 500;
+  }
+  .hour .hr {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--accent-2);
+    margin-top: 2px;
+  }
+
+  /* ===== Daily forecast ===== */
   .forecast {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
@@ -322,6 +457,7 @@
   }
   .fday .t small { color: var(--muted); font-weight: 300; }
 
+  /* ===== Clothing ===== */
   .clothing {
     border-top: 2px solid var(--ink);
     padding-top: 18px;
@@ -338,10 +474,24 @@
     align-items: center;
     gap: 8px;
   }
-  .clothing-h::before {
-    content: "✦";
-    color: var(--gold);
+  .clothing-h::before { content: "✦"; color: var(--gold); }
+  .clothing.kid-mode .clothing-h { color: var(--kid); }
+  .clothing.kid-mode .clothing-h::before { content: "👶"; }
+
+  .season-badge {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    background: var(--ink);
+    color: var(--paper);
+    padding: 3px 8px;
+    border-radius: 3px;
+    margin-left: auto;
   }
+  .clothing.kid-mode .season-badge { background: var(--kid); }
+
   .outfit-title {
     font-family: 'Fraunces', serif;
     font-style: italic;
@@ -368,6 +518,8 @@
     left: 0;
     color: var(--accent);
   }
+  .clothing.kid-mode .outfit-list li::before { color: var(--kid); }
+
   .tip {
     margin-top: 12px;
     padding: 10px 12px;
@@ -379,11 +531,11 @@
     color: var(--ink-soft);
     line-height: 1.5;
   }
-  .tip b {
-    font-style: normal;
-    font-weight: 600;
-    color: var(--ink);
+  .clothing.kid-mode .tip {
+    background: rgba(217, 106, 141, .08);
+    border-left-color: var(--kid);
   }
+  .tip b { font-style: normal; font-weight: 600; color: var(--ink); }
 
   .foot {
     margin-top: 40px;
@@ -416,22 +568,9 @@
   .card:nth-child(1) { animation-delay: .1s; }
   .card:nth-child(2) { animation-delay: .25s; }
   .card:nth-child(3) { animation-delay: .4s; }
-  @keyframes rise {
-    to { opacity: 1; transform: translateY(0); }
-  }
+  @keyframes rise { to { opacity: 1; transform: translateY(0); } }
 
-  .refresh-flash {
-    animation: flash .8s ease;
-  }
-  @keyframes flash {
-    0% { background-color: rgba(212, 162, 76, .25); }
-    100% { background-color: transparent; }
-  }
-
-  /* Smooth fade on language switch */
-  .lang-fade {
-    animation: langFade .5s ease;
-  }
+  .lang-fade { animation: langFade .5s ease; }
   @keyframes langFade {
     0% { opacity: 0; transform: translateY(4px); }
     100% { opacity: 1; transform: translateY(0); }
@@ -440,10 +579,15 @@
 </head>
 <body>
 
-<!-- Language toggle -->
-<div class="lang-toggle" role="group" aria-label="Language">
-  <button id="btn-en" class="active" onclick="setLang('en')">EN</button>
-  <button id="btn-bg" onclick="setLang('bg')">БГ</button>
+<div class="top-controls">
+  <div class="toggle-pill kid" role="group" aria-label="Mode">
+    <button id="btn-adult" class="active" onclick="setMode('adult')">👤 ADULT</button>
+    <button id="btn-kid" onclick="setMode('kid')">👶 KID</button>
+  </div>
+  <div class="toggle-pill" role="group" aria-label="Language">
+    <button id="btn-en" class="active" onclick="setLang('en')">EN</button>
+    <button id="btn-bg" onclick="setLang('bg')">БГ</button>
+  </div>
 </div>
 
 <div class="wrap">
@@ -488,10 +632,17 @@
         <div class="stat"><span class="lbl" data-lbl="rain">Rain</span><span class="val s-rain">--<small>%</small></span></div>
       </div>
 
+      <div class="section-h" data-h="hourly">Next 24 Hours</div>
+      <div class="hourly" id="hr-amsterdam"></div>
+
+      <div class="section-h" data-h="daily">5-Day Forecast</div>
       <div class="forecast" id="fc-amsterdam"></div>
 
-      <div class="clothing">
-        <div class="clothing-h" data-clothing-h>Today's Wardrobe</div>
+      <div class="clothing" id="clothing-amsterdam">
+        <div class="clothing-h">
+          <span data-clothing-h>Today's Wardrobe</span>
+          <span class="season-badge" id="season-amsterdam">—</span>
+        </div>
         <div class="outfit-title" id="outfit-title-amsterdam">—</div>
         <ul class="outfit-list" id="outfit-list-amsterdam"></ul>
         <div class="tip" id="tip-amsterdam"></div>
@@ -521,10 +672,17 @@
         <div class="stat"><span class="lbl" data-lbl="rain">Rain</span><span class="val s-rain">--<small>%</small></span></div>
       </div>
 
+      <div class="section-h" data-h="hourly">Next 24 Hours</div>
+      <div class="hourly" id="hr-sofia"></div>
+
+      <div class="section-h" data-h="daily">5-Day Forecast</div>
       <div class="forecast" id="fc-sofia"></div>
 
-      <div class="clothing">
-        <div class="clothing-h" data-clothing-h>Today's Wardrobe</div>
+      <div class="clothing" id="clothing-sofia">
+        <div class="clothing-h">
+          <span data-clothing-h>Today's Wardrobe</span>
+          <span class="season-badge" id="season-sofia">—</span>
+        </div>
         <div class="outfit-title" id="outfit-title-sofia">—</div>
         <ul class="outfit-list" id="outfit-list-sofia"></ul>
         <div class="tip" id="tip-sofia"></div>
@@ -554,10 +712,17 @@
         <div class="stat"><span class="lbl" data-lbl="rain">Rain</span><span class="val s-rain">--<small>%</small></span></div>
       </div>
 
+      <div class="section-h" data-h="hourly">Next 24 Hours</div>
+      <div class="hourly" id="hr-shenzhen"></div>
+
+      <div class="section-h" data-h="daily">5-Day Forecast</div>
       <div class="forecast" id="fc-shenzhen"></div>
 
-      <div class="clothing">
-        <div class="clothing-h" data-clothing-h>Today's Wardrobe</div>
+      <div class="clothing" id="clothing-shenzhen">
+        <div class="clothing-h">
+          <span data-clothing-h>Today's Wardrobe</span>
+          <span class="season-badge" id="season-shenzhen">—</span>
+        </div>
         <div class="outfit-title" id="outfit-title-shenzhen">—</div>
         <ul class="outfit-list" id="outfit-list-shenzhen"></ul>
         <div class="tip" id="tip-shenzhen"></div>
@@ -576,32 +741,32 @@
 
 <script>
 /* ============================================================
-   TRI-CITY WEATHER · BILINGUAL (EN / BG)
-   Real-time via Open-Meteo (no API key needed)
+   TRI-CITY WEATHER · BILINGUAL · ADULT/KID · ANIMATED
    ============================================================ */
 
 const CITIES = [
-  { id: 'amsterdam', lat: 52.3676, lon: 4.9041, tz: 'Europe/Amsterdam' },
-  { id: 'sofia',     lat: 42.6977, lon: 23.3219, tz: 'Europe/Sofia' },
-  { id: 'shenzhen',  lat: 22.5431, lon: 114.0579, tz: 'Asia/Shanghai' }
+  { id: 'amsterdam', lat: 52.3676, lon: 4.9041, tz: 'Europe/Amsterdam', hemisphere: 'north' },
+  { id: 'sofia',     lat: 42.6977, lon: 23.3219, tz: 'Europe/Sofia', hemisphere: 'north' },
+  { id: 'shenzhen',  lat: 22.5431, lon: 114.0579, tz: 'Asia/Shanghai', hemisphere: 'north_subtropical' }
 ];
 
 /* ============================================================
-   TRANSLATIONS
+   I18N
    ============================================================ */
 const I18N = {
   en: {
-    htmlLang: 'en',
-    locale: 'en-GB',
-    masthead: { left: 'Vol. I &nbsp;·&nbsp; No. 01<br>Atmospheric Bulletin', title: 'The <b>Tri-City</b> <i>Weather</i>', live: 'Live · Updates 10 min' },
+    htmlLang: 'en', locale: 'en-GB',
+    masthead: { left: 'Vol. I &nbsp;·&nbsp; No. 02<br>Atmospheric Bulletin', title: 'The <b>Tri-City</b> <i>Weather</i>', live: 'Live · Updates 10 min' },
     strapCities: 'Amsterdam · Sofia · Shenzhen',
     strapUnits: 'Temperature in °Celsius',
     feelLabel: 'Feels like',
     labels: { wind: 'Wind', hum: 'Humidity', rain: 'Rain' },
-    clothingH: "Today's Wardrobe",
-    stylistNote: "Stylist's note —",
+    sections: { hourly: 'Next 24 Hours', daily: '5-Day Forecast' },
+    clothingH: { adult: "Today's Wardrobe", kid: "Today's Kid Outfit" },
+    stylistNote: { adult: "Stylist's note —", kid: "Parent's tip —" },
     todayLabel: 'Today',
     days: ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],
+    seasons: { spring: 'SPRING', summer: 'SUMMER', autumn: 'AUTUMN', winter: 'WINTER' },
     dataLabel: 'Data — ',
     credit: '© Atmospheric Bulletin',
     lastUpdate: 'Last updated:',
@@ -610,20 +775,22 @@ const I18N = {
       sofia:     { name: 'Sofia',     country: 'Bulgaria' },
       shenzhen:  { name: 'Shenzhen',  country: 'China' }
     },
-    no: 'No.'
+    no: 'No.',
+    now: 'NOW'
   },
   bg: {
-    htmlLang: 'bg',
-    locale: 'bg-BG',
-    masthead: { left: 'Том I &nbsp;·&nbsp; № 01<br>Атмосферен бюлетин', title: 'Времето в <b>трите града</b>', live: 'На живо · Обновява се на 10 мин' },
+    htmlLang: 'bg', locale: 'bg-BG',
+    masthead: { left: 'Том I &nbsp;·&nbsp; № 02<br>Атмосферен бюлетин', title: 'Времето в <b>трите града</b>', live: 'На живо · Обновява се на 10 мин' },
     strapCities: 'Амстердам · София · Шенжен',
     strapUnits: 'Температура в °Целзий',
     feelLabel: 'Усеща се като',
     labels: { wind: 'Вятър', hum: 'Влажност', rain: 'Дъжд' },
-    clothingH: 'Днешният гардероб',
-    stylistNote: 'Бележка на стилиста —',
+    sections: { hourly: 'Следващите 24 часа', daily: 'Прогноза за 5 дни' },
+    clothingH: { adult: 'Днешният гардероб', kid: 'Облекло за детето днес' },
+    stylistNote: { adult: 'Бележка на стилиста —', kid: 'Съвет за родителя —' },
     todayLabel: 'Днес',
     days: ['Нед','Пон','Вт','Ср','Чт','Пт','Сб'],
+    seasons: { spring: 'ПРОЛЕТ', summer: 'ЛЯТО', autumn: 'ЕСЕН', winter: 'ЗИМА' },
     dataLabel: 'Източник — ',
     credit: '© Атмосферен бюлетин',
     lastUpdate: 'Последно обновяване:',
@@ -632,11 +799,11 @@ const I18N = {
       sofia:     { name: 'София',     country: 'България' },
       shenzhen:  { name: 'Шенжен',    country: 'Китай' }
     },
-    no: '№'
+    no: '№',
+    now: 'СЕГА'
   }
 };
 
-/* WMO weather codes → text in both languages + icon key */
 const WMO = {
   0:  { en: 'Clear sky',              bg: 'Ясно небе',                  icon: 'sun' },
   1:  { en: 'Mainly clear',           bg: 'Предимно ясно',              icon: 'sun' },
@@ -665,127 +832,274 @@ const WMO = {
   86: { en: 'Heavy snow showers',     bg: 'Силни снежни превалявания',  icon: 'snow' },
   95: { en: 'Thunderstorm',           bg: 'Гръмотевична буря',          icon: 'storm' },
   96: { en: 'Thunderstorm w/ hail',   bg: 'Буря с градушка',            icon: 'storm' },
-  99: { en: 'Severe thunderstorm',   bg: 'Силна гръмотевична буря',     icon: 'storm' }
+  99: { en: 'Severe thunderstorm',    bg: 'Силна гръмотевична буря',    icon: 'storm' }
 };
 
-/* SVG weather icons */
+/* ============================================================
+   ANIMATED SVG ICONS
+   ============================================================ */
 const ICONS = {
-  sun: `<g fill="none" stroke="#c8553d" stroke-width="2.2" stroke-linecap="round">
-    <circle cx="50" cy="50" r="16" fill="#d4a24c" stroke="#c8553d"/>
-    <line x1="50" y1="18" x2="50" y2="26"/><line x1="50" y1="74" x2="50" y2="82"/>
-    <line x1="18" y1="50" x2="26" y2="50"/><line x1="74" y1="50" x2="82" y2="50"/>
-    <line x1="27" y1="27" x2="33" y2="33"/><line x1="67" y1="67" x2="73" y2="73"/>
-    <line x1="73" y1="27" x2="67" y2="33"/><line x1="33" y1="67" x2="27" y2="73"/>
-  </g>`,
-  partly: `<g fill="none" stroke="#2a2f37" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-    <circle cx="38" cy="38" r="13" fill="#d4a24c" stroke="#c8553d"/>
-    <line x1="38" y1="16" x2="38" y2="22" stroke="#c8553d"/>
-    <line x1="20" y1="38" x2="26" y2="38" stroke="#c8553d"/>
-    <line x1="22" y1="22" x2="27" y2="27" stroke="#c8553d"/>
-    <path d="M 35 65 Q 28 65 28 58 Q 28 50 38 50 Q 42 42 52 44 Q 62 44 64 54 Q 74 54 74 64 Q 74 72 66 72 L 35 72 Q 28 72 28 65 Z" fill="#f5f1ea"/>
-  </g>`,
-  cloud: `<g fill="#ede6d8" stroke="#2a2f37" stroke-width="2.2" stroke-linejoin="round">
-    <path d="M 30 60 Q 22 60 22 52 Q 22 42 34 42 Q 38 32 50 32 Q 64 32 66 46 Q 78 46 78 58 Q 78 68 68 68 L 30 68 Q 22 68 22 60 Z"/>
-  </g>`,
-  rain: `<g fill="none" stroke="#588b8b" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M 30 50 Q 22 50 22 42 Q 22 32 34 32 Q 38 22 50 22 Q 64 22 66 36 Q 78 36 78 48 Q 78 58 68 58 L 30 58 Q 22 58 22 50 Z" fill="#dfe8e3"/>
-    <line x1="34" y1="68" x2="30" y2="78" stroke="#c8553d"/>
-    <line x1="48" y1="68" x2="44" y2="80"/>
-    <line x1="62" y1="68" x2="58" y2="78" stroke="#c8553d"/>
-  </g>`,
-  snow: `<g fill="none" stroke="#588b8b" stroke-width="2" stroke-linecap="round">
-    <path d="M 30 50 Q 22 50 22 42 Q 22 32 34 32 Q 38 22 50 22 Q 64 22 66 36 Q 78 36 78 48 Q 78 58 68 58 L 30 58 Q 22 58 22 50 Z" fill="#ede6d8" stroke="#2a2f37" stroke-width="2.2"/>
-    <g stroke="#2a2f37">
-      <line x1="35" y1="68" x2="35" y2="80"/><line x1="29" y1="74" x2="41" y2="74"/>
-      <line x1="50" y1="70" x2="50" y2="84"/><line x1="44" y1="77" x2="56" y2="77"/>
-      <line x1="65" y1="68" x2="65" y2="80"/><line x1="59" y1="74" x2="71" y2="74"/>
+  sun: `
+    <g class="anim-sun-rays" stroke="#c8553d" stroke-width="2.4" stroke-linecap="round" fill="none">
+      <line x1="50" y1="14" x2="50" y2="24"/>
+      <line x1="50" y1="76" x2="50" y2="86"/>
+      <line x1="14" y1="50" x2="24" y2="50"/>
+      <line x1="76" y1="50" x2="86" y2="50"/>
+      <line x1="24" y1="24" x2="31" y2="31"/>
+      <line x1="69" y1="69" x2="76" y2="76"/>
+      <line x1="76" y1="24" x2="69" y2="31"/>
+      <line x1="31" y1="69" x2="24" y2="76"/>
     </g>
-  </g>`,
-  fog: `<g fill="none" stroke="#6b6862" stroke-width="2.4" stroke-linecap="round">
-    <line x1="20" y1="35" x2="80" y2="35"/><line x1="15" y1="48" x2="75" y2="48"/>
-    <line x1="25" y1="61" x2="85" y2="61"/><line x1="20" y1="74" x2="70" y2="74"/>
-  </g>`,
-  storm: `<g fill="none" stroke="#2a2f37" stroke-width="2.2" stroke-linejoin="round">
-    <path d="M 30 50 Q 22 50 22 42 Q 22 32 34 32 Q 38 22 50 22 Q 64 22 66 36 Q 78 36 78 48 Q 78 58 68 58 L 30 58 Q 22 58 22 50 Z" fill="#6b6862"/>
-    <polygon points="48,58 40,76 50,76 44,88 60,68 50,68 56,58" fill="#d4a24c" stroke="#c8553d"/>
-  </g>`
+    <g class="anim-sun-core">
+      <circle cx="50" cy="50" r="17" fill="#d4a24c" stroke="#c8553d" stroke-width="2.4"/>
+    </g>`,
+  partly: `
+    <g class="anim-sun-rays" stroke="#c8553d" stroke-width="2" stroke-linecap="round" fill="none" style="transform-origin:38px 38px">
+      <line x1="38" y1="14" x2="38" y2="22"/>
+      <line x1="14" y1="38" x2="22" y2="38"/>
+      <line x1="20" y1="20" x2="26" y2="26"/>
+      <line x1="56" y1="20" x2="50" y2="26"/>
+    </g>
+    <circle cx="38" cy="38" r="13" fill="#d4a24c" stroke="#c8553d" stroke-width="2.2"/>
+    <g class="anim-cloud">
+      <path d="M 35 65 Q 28 65 28 58 Q 28 50 38 50 Q 42 42 52 44 Q 62 44 64 54 Q 74 54 74 64 Q 74 72 66 72 L 35 72 Q 28 72 28 65 Z"
+            fill="#f5f1ea" stroke="#2a2f37" stroke-width="2.2" stroke-linejoin="round"/>
+    </g>`,
+  cloud: `
+    <g class="anim-cloud">
+      <path d="M 30 60 Q 22 60 22 52 Q 22 42 34 42 Q 38 32 50 32 Q 64 32 66 46 Q 78 46 78 58 Q 78 68 68 68 L 30 68 Q 22 68 22 60 Z"
+            fill="#ede6d8" stroke="#2a2f37" stroke-width="2.2" stroke-linejoin="round"/>
+    </g>`,
+  rain: `
+    <g class="anim-cloud">
+      <path d="M 30 50 Q 22 50 22 42 Q 22 32 34 32 Q 38 22 50 22 Q 64 22 66 36 Q 78 36 78 48 Q 78 58 68 58 L 30 58 Q 22 58 22 50 Z"
+            fill="#dfe8e3" stroke="#2a2f37" stroke-width="2.2" stroke-linejoin="round"/>
+    </g>
+    <g stroke="#588b8b" stroke-width="2.4" stroke-linecap="round">
+      <line class="anim-raindrop" x1="34" y1="62" x2="32" y2="74"/>
+      <line class="anim-raindrop" x1="46" y1="62" x2="44" y2="74"/>
+      <line class="anim-raindrop" x1="58" y1="62" x2="56" y2="74"/>
+      <line class="anim-raindrop" x1="68" y1="62" x2="66" y2="74"/>
+    </g>`,
+  snow: `
+    <g class="anim-cloud">
+      <path d="M 30 50 Q 22 50 22 42 Q 22 32 34 32 Q 38 22 50 22 Q 64 22 66 36 Q 78 36 78 48 Q 78 58 68 58 L 30 58 Q 22 58 22 50 Z"
+            fill="#ede6d8" stroke="#2a2f37" stroke-width="2.2" stroke-linejoin="round"/>
+    </g>
+    <g stroke="#2a2f37" stroke-width="1.8" stroke-linecap="round" fill="none">
+      <g class="anim-snow" style="transform-origin:35px 70px">
+        <line x1="35" y1="65" x2="35" y2="75"/>
+        <line x1="30" y1="70" x2="40" y2="70"/>
+      </g>
+      <g class="anim-snow" style="transform-origin:50px 74px">
+        <line x1="50" y1="69" x2="50" y2="79"/>
+        <line x1="45" y1="74" x2="55" y2="74"/>
+      </g>
+      <g class="anim-snow" style="transform-origin:65px 70px">
+        <line x1="65" y1="65" x2="65" y2="75"/>
+        <line x1="60" y1="70" x2="70" y2="70"/>
+      </g>
+    </g>`,
+  fog: `
+    <g class="anim-fog" stroke="#6b6862" stroke-width="2.6" stroke-linecap="round" fill="none">
+      <line x1="20" y1="32" x2="80" y2="32"/>
+      <line x1="14" y1="46" x2="76" y2="46"/>
+      <line x1="26" y1="60" x2="86" y2="60"/>
+      <line x1="20" y1="74" x2="70" y2="74"/>
+    </g>`,
+  storm: `
+    <g class="anim-cloud">
+      <path d="M 30 48 Q 22 48 22 40 Q 22 30 34 30 Q 38 20 50 20 Q 64 20 66 34 Q 78 34 78 46 Q 78 56 68 56 L 30 56 Q 22 56 22 48 Z"
+            fill="#6b6862" stroke="#2a2f37" stroke-width="2.2" stroke-linejoin="round"/>
+    </g>
+    <g class="anim-bolt">
+      <polygon points="50,56 40,76 50,76 44,90 64,68 52,68 58,56" fill="#d4a24c" stroke="#c8553d" stroke-width="2"/>
+    </g>`
 };
+
 const TINY_ICON = { sun:'☀', partly:'⛅', cloud:'☁', rain:'🌧', snow:'❄', fog:'🌫', storm:'⛈' };
 
 /* ============================================================
-   CLOTHING RECOMMENDATION ENGINE (bilingual)
+   SEASON DETECTION (meteorological)
    ============================================================ */
-const OUTFITS = {
+function getSeason(month, hemisphere) {
+  /* month: 0-11 (JS) — using meteorological seasons */
+  if (hemisphere === 'north_subtropical') {
+    /* Shenzhen: hot wet summer, mild dry winter */
+    if (month >= 2 && month <= 4) return 'spring';
+    if (month >= 5 && month <= 8) return 'summer';
+    if (month >= 9 && month <= 10) return 'autumn';
+    return 'winter';
+  }
+  /* Northern hemisphere */
+  if (month >= 2 && month <= 4) return 'spring';
+  if (month >= 5 && month <= 7) return 'summer';
+  if (month >= 8 && month <= 10) return 'autumn';
+  return 'winter';
+}
+
+/* ============================================================
+   ADULT CLOTHING (6 temperature bands)
+   ============================================================ */
+const OUTFITS_ADULT = {
   arctic: {
-    en: {
-      title: "Bundle up — it's freezing out there.",
-      items: ['Heavy insulated parka or down coat','Thermal base layer (merino or fleece)','Wool sweater on top','Lined trousers or thermal leggings','Insulated waterproof boots','Wool scarf, beanie, and gloves'],
-      tip:   'Cover exposed skin — frostbite risk rises sharply below zero.'
-    },
-    bg: {
-      title: 'Облечете се топло — навън е под нулата.',
-      items: ['Дебело пухено яке или зимен парк','Термо бельо (мерино или поларено)','Вълнен пуловер върху термото','Подплатен панталон или термо клин','Топли водоустойчиви боти','Вълнен шал, шапка и ръкавици'],
-      tip:   'Покрийте откритата кожа — рискът от измръзване нараства рязко под нулата.'
-    }
+    en: { title: "Bundle up — it's freezing out there.",
+          items: ['Heavy insulated parka or down coat','Thermal base layer (merino or fleece)','Wool sweater on top','Lined trousers or thermal leggings','Insulated waterproof boots','Wool scarf, beanie, and gloves'],
+          tip:   'Cover exposed skin — frostbite risk rises sharply below zero.' },
+    bg: { title: 'Облечете се топло — навън е под нулата.',
+          items: ['Дебело пухено яке или зимен парк','Термо бельо (мерино или поларено)','Вълнен пуловер върху термото','Подплатен панталон или термо клин','Топли водоустойчиви боти','Вълнен шал, шапка и ръкавици'],
+          tip:   'Покрийте откритата кожа — рискът от измръзване нараства рязко под нулата.' }
   },
   cold: {
-    en: {
-      title: 'A proper winter coat day.',
-      items: ['Wool overcoat or padded jacket','Long-sleeve shirt with a fine-knit jumper','Dark jeans or wool trousers','Closed leather boots or chunky sneakers','Light scarf, gloves optional'],
-      tip:   'Layer thoughtfully — you can shed a piece indoors without losing warmth.'
-    },
-    bg: {
-      title: 'Ден за истинско зимно палто.',
-      items: ['Вълнено палто или подплатено яке','Риза с дълъг ръкав и тънък пуловер','Тъмни дънки или вълнен панталон','Затворени кожени боти или масивни маратонки','Лек шал; ръкавици по желание'],
-      tip:   'Облечете се на пластове — на закрито можете да свалите едно нещо, без да премръзнете.'
-    }
+    en: { title: 'A proper winter coat day.',
+          items: ['Wool overcoat or padded jacket','Long-sleeve shirt with a fine-knit jumper','Dark jeans or wool trousers','Closed leather boots or chunky sneakers','Light scarf, gloves optional'],
+          tip:   'Layer thoughtfully — you can shed a piece indoors without losing warmth.' },
+    bg: { title: 'Ден за истинско зимно палто.',
+          items: ['Вълнено палто или подплатено яке','Риза с дълъг ръкав и тънък пуловер','Тъмни дънки или вълнен панталон','Затворени кожени боти или масивни маратонки','Лек шал; ръкавици по желание'],
+          tip:   'Облечете се на пластове — на закрито можете да свалите едно нещо, без да премръзнете.' }
   },
   cool: {
-    en: {
-      title: 'Crisp & layered — classic transitional weather.',
-      items: ['Trench coat, leather jacket, or denim jacket','Long-sleeve shirt or light knit','Chinos or dark jeans','Loafers, boots, or clean sneakers','A scarf adds polish and warmth'],
-      tip:   'Mornings will bite — bring a layer you can tie around your waist by midday.'
-    },
-    bg: {
-      title: 'Свежо и на пластове — класическо преходно време.',
-      items: ['Шлифер, кожено или дънково яке','Риза с дълъг ръкав или тънка плетена блуза','Чино панталон или тъмни дънки','Мокасини, боти или чисти маратонки','Шал придава завършеност и топлина'],
-      tip:   'Сутрините ще са хладни — носете слой, който можете да вържете на кръста към обяд.'
-    }
+    en: { title: 'Crisp & layered — classic transitional weather.',
+          items: ['Trench coat, leather jacket, or denim jacket','Long-sleeve shirt or light knit','Chinos or dark jeans','Loafers, boots, or clean sneakers','A scarf adds polish and warmth'],
+          tip:   'Mornings will bite — bring a layer you can tie around your waist by midday.' },
+    bg: { title: 'Свежо и на пластове — класическо преходно време.',
+          items: ['Шлифер, кожено или дънково яке','Риза с дълъг ръкав или тънка плетена блуза','Чино панталон или тъмни дънки','Мокасини, боти или чисти маратонки','Шал придава завършеност и топлина'],
+          tip:   'Сутрините ще са хладни — носете слой, който можете да вържете на кръста към обяд.' }
   },
   mild: {
-    en: {
-      title: 'A perfect dress-anything day.',
-      items: ['Light cardigan, blazer, or overshirt','T-shirt, blouse, or short-sleeve button-up','Chinos, jeans, midi dress, or skirt','Sneakers, loafers, or sandals','Sunglasses recommended'],
-      tip:   'Ideal weather for layering — a light jacket handles any surprise breeze.'
-    },
-    bg: {
-      title: 'Идеален ден да облечете каквото пожелаете.',
-      items: ['Лека жилетка, сако или риза-яке','Тениска, блуза или риза с къс ръкав','Чино, дънки, миди рокля или пола','Маратонки, мокасини или сандали','Препоръчват се слънчеви очила'],
-      tip:   'Идеално време за пластове — леко яке се справя с внезапен вятър.'
-    }
+    en: { title: 'A perfect dress-anything day.',
+          items: ['Light cardigan, blazer, or overshirt','T-shirt, blouse, or short-sleeve button-up','Chinos, jeans, midi dress, or skirt','Sneakers, loafers, or sandals','Sunglasses recommended'],
+          tip:   'Ideal weather for layering — a light jacket handles any surprise breeze.' },
+    bg: { title: 'Идеален ден да облечете каквото пожелаете.',
+          items: ['Лека жилетка, сако или риза-яке','Тениска, блуза или риза с къс ръкав','Чино, дънки, миди рокля или пола','Маратонки, мокасини или сандали','Препоръчват се слънчеви очила'],
+          tip:   'Идеално време за пластове — леко яке се справя с внезапен вятър.' }
   },
   warm: {
-    en: {
-      title: 'Lean breezy and breathable.',
-      items: ['Linen shirt, T-shirt, or sleeveless top','Cotton shorts, light trousers, or summer dress','Canvas sneakers, espadrilles, or sandals','Sunglasses & a wide-brim hat','Sunscreen — at least SPF 30'],
-      tip:   'Choose natural fibres — linen and cotton breathe far better than synthetics.'
-    },
-    bg: {
-      title: 'Заложете на леки и дишащи материи.',
-      items: ['Ленена риза, тениска или потник','Памучни шорти, лек панталон или лятна рокля','Платнени маратонки, еспадрили или сандали','Слънчеви очила и шапка с широка периферия','Слънцезащитен крем — поне SPF 30'],
-      tip:   'Изберете естествени материи — ленът и памукът дишат много по-добре от синтетиката.'
-    }
+    en: { title: 'Lean breezy and breathable.',
+          items: ['Linen shirt, T-shirt, or sleeveless top','Cotton shorts, light trousers, or summer dress','Canvas sneakers, espadrilles, or sandals','Sunglasses & a wide-brim hat','Sunscreen — at least SPF 30'],
+          tip:   'Choose natural fibres — linen and cotton breathe far better than synthetics.' },
+    bg: { title: 'Заложете на леки и дишащи материи.',
+          items: ['Ленена риза, тениска или потник','Памучни шорти, лек панталон или лятна рокля','Платнени маратонки, еспадрили или сандали','Слънчеви очила и шапка с широка периферия','Слънцезащитен крем — поне SPF 30'],
+          tip:   'Изберете естествени материи — ленът и памукът дишат много по-добре от синтетиката.' }
   },
   hot: {
-    en: {
-      title: 'Hot — keep it minimal & sun-smart.',
-      items: ['Loose linen or cotton — light colours only','Shorts, breezy skirt, or airy dress','Open sandals or ventilated sneakers','Wide-brim hat & UV sunglasses','SPF 50, reapply every 2 hours','Carry a refillable water bottle'],
-      tip:   'Avoid direct sun between 11:00 and 15:00. Stay hydrated.'
+    en: { title: 'Hot — keep it minimal & sun-smart.',
+          items: ['Loose linen or cotton — light colours only','Shorts, breezy skirt, or airy dress','Open sandals or ventilated sneakers','Wide-brim hat & UV sunglasses','SPF 50, reapply every 2 hours','Carry a refillable water bottle'],
+          tip:   'Avoid direct sun between 11:00 and 15:00. Stay hydrated.' },
+    bg: { title: 'Горещо — минимализъм и защита от слънцето.',
+          items: ['Свободен лен или памук — само светли цветове','Шорти, ефирна пола или лека рокля','Отворени сандали или вентилирани маратонки','Шапка с широка периферия и UV очила','SPF 50, подновявайте на всеки 2 часа','Носете бутилка с вода за многократна употреба'],
+          tip:   'Избягвайте прякото слънце между 11:00 и 15:00 ч. Пийте достатъчно вода.' }
+  }
+};
+
+/* ============================================================
+   KID CLOTHING — by season & temperature
+   Children feel cold faster and overheat faster than adults.
+   Each season has 3 temp bands: cold-end / typical / warm-end.
+   ============================================================ */
+const OUTFITS_KID = {
+  spring: {
+    cold: {
+      en: { title: 'A chilly spring morning — dress warmly.',
+            items: ['Padded spring jacket with hood','Long-sleeve cotton shirt + light sweater','Long trousers or lined leggings','Closed shoes or light boots','Thin beanie & light gloves for the morning','Spare socks in the bag'],
+            tip:   'Spring mornings can be 8–10°C colder than midday — pack a layer they can take off later.' },
+      bg: { title: 'Хладна пролетна сутрин — облечете го топло.',
+            items: ['Подплатено пролетно яке с качулка','Памучна риза с дълъг ръкав + лек пуловер','Дълъг панталон или подплатен клин','Затворени обувки или леки боти','Тънка шапка и леки ръкавици за сутринта','Резервни чорапи в чантата'],
+            tip:   'Пролетните сутрини могат да са с 8–10°C по-студени от обяд — носете слой, който детето да съблече по-късно.' }
     },
-    bg: {
-      title: 'Горещо — минимализъм и защита от слънцето.',
-      items: ['Свободен лен или памук — само светли цветове','Шорти, ефирна пола или лека рокля','Отворени сандали или вентилирани маратонки','Шапка с широка периферия и UV очила','SPF 50, подновявайте на всеки 2 часа','Носете бутилка с вода за многократна употреба'],
-      tip:   'Избягвайте прякото слънце между 11:00 и 15:00 ч. Пийте достатъчно вода.'
+    mild: {
+      en: { title: 'Perfect spring day — layered & playful.',
+            items: ['Light windbreaker or denim jacket','Long-sleeve T-shirt or thin sweatshirt','Comfortable trousers or jeans','Sneakers (closed-toe)','Light cap for sun protection'],
+            tip:   "Spring weather flips fast — choose layers they can manage themselves." },
+      bg: { title: 'Перфектен пролетен ден — на пластове и удобно.',
+            items: ['Леко ветроустойчиво или дънково яке','Тениска с дълъг ръкав или тънък суитчър','Удобен панталон или дънки','Маратонки (затворени)','Лека шапка за защита от слънцето'],
+            tip:   'Пролетното време се мени бързо — изберете слоеве, които детето да управлява само.' }
+    },
+    warm: {
+      en: { title: 'Warm spring afternoon — light & breathable.',
+            items: ['Light long-sleeve T-shirt or short-sleeve','Cotton trousers, leggings, or play shorts','Light cardigan in the bag (for shade/wind)','Breathable sneakers or canvas shoes','Sun cap & SPF 30 cream'],
+            tip:   'Even on warm spring days, UV is rising — sun cream on cheeks, nose, and ears.' },
+      bg: { title: 'Топъл пролетен следобед — леко и дишащо.',
+            items: ['Лека тениска с дълъг или къс ръкав','Памучен панталон, клин или шорти за игра','Лека жилетка в чантата (за сянка/вятър)','Дишащи маратонки или платнени обувки','Шапка с козирка и SPF 30 крем'],
+            tip:   'Дори в топли пролетни дни UV-индексът расте — мажете бузките, носа и ушичките.' }
+    }
+  },
+  summer: {
+    cold: {
+      en: { title: 'A cooler summer day — light layers.',
+            items: ['Light long-sleeve T-shirt or thin sweatshirt','Cotton trousers or capri leggings','Closed sneakers','Sun hat (UV is still strong even when cooler)','Light jacket for evenings'],
+            tip:   "Don't skip sunscreen — UV doesn't care if it feels cool outside." },
+      bg: { title: 'По-хладен летен ден — леки пластове.',
+            items: ['Лека тениска с дълъг ръкав или тънък суитчър','Памучен панталон или дълъг клин','Затворени маратонки','Шапка за слънце (UV-индексът е силен и при по-хладно)','Леко яке за вечерта'],
+            tip:   'Не пропускайте слънцезащитата — UV не зависи от това дали навън е хладно.' }
+    },
+    mild: {
+      en: { title: 'Beautiful summer day — sun-smart play.',
+            items: ['Cotton T-shirt (light colours)','Shorts, summer skirt, or playsuit','Sandals with secure straps or canvas sneakers','Wide-brim sun hat — must cover the neck','SPF 50 sunscreen, reapplied every 2 hours','Refillable water bottle'],
+            tip:   "Children's skin burns 3× faster than adult skin — shade between 11:00 and 15:00." },
+      bg: { title: 'Красив летен ден — игра със защита от слънцето.',
+            items: ['Памучна тениска (светли цветове)','Шорти, лятна пола или гащеризон','Сандали с лепенки или платнени маратонки','Шапка с широка периферия — да покрива врата','SPF 50 крем, подновяван на всеки 2 часа','Бутилка за многократна употреба'],
+            tip:   'Детската кожа изгаря 3 пъти по-бързо от тази на възрастните — сянка между 11:00 и 15:00 ч.' }
+    },
+    warm: {
+      en: { title: 'Hot summer day — minimum clothes, maximum protection.',
+            items: ['Light loose T-shirt — long-sleeve UV shirt is ideal','Loose shorts in light cotton or linen','Open sandals or water shoes','Wide-brim hat with neck flap','SPF 50+, reapply every 90 minutes','Plenty of water — small frequent sips','Avoid asphalt; choose grass or shade'],
+            tip:   'Heat exhaustion in kids hits suddenly — watch for redness, irritability, or fatigue. Indoors during peak hours.' },
+      bg: { title: 'Горещ летен ден — минимум дрехи, максимум защита.',
+            items: ['Лека свободна тениска — UV блуза с дълъг ръкав е идеална','Свободни шорти от памук или лен','Отворени сандали или водни обувки','Шапка с широка периферия и платно за врата','SPF 50+, подновяван на всеки 90 минути','Много вода — често по малко','Избягвайте асфалта; играта на трева или сянка'],
+            tip:   'Топлинният удар при децата идва внезапно — следете за зачервяване, нервност или умора. На закрито в пиковите часове.' }
+    }
+  },
+  autumn: {
+    cold: {
+      en: { title: 'Crisp autumn morning — bundle up.',
+            items: ['Padded autumn jacket with hood','Long-sleeve shirt + warm sweater or fleece','Long trousers (jeans or thick cotton)','Waterproof boots (autumn = puddles)','Beanie & light gloves'],
+            tip:   "Layer with pieces they can take off — classrooms are warm, playgrounds aren't." },
+      bg: { title: 'Свежа есенна сутрин — облечете го топло.',
+            items: ['Подплатено есенно яке с качулка','Риза с дълъг ръкав + топъл пуловер или полар','Дълъг панталон (дънки или дебел памук)','Водоустойчиви боти (есента = локви)','Шапка и леки ръкавици'],
+            tip:   'Пластове, които детето може да съблече — класните стаи са топли, дворът не.' }
+    },
+    mild: {
+      en: { title: 'Classic autumn day — layered & cozy.',
+            items: ['Lightweight jacket or fleece','Long-sleeve T-shirt + thin hoodie','Long trousers','Closed sneakers or ankle boots','A small scarf for windy days'],
+            tip:   'Pack a hooded layer — autumn rain comes without warning.' },
+      bg: { title: 'Класически есенен ден — на пластове и уютно.',
+            items: ['Леко яке или полар','Тениска с дълъг ръкав + тънка блуза с качулка','Дълъг панталон','Затворени маратонки или леки боти','Малък шал за ветровит ден'],
+            tip:   'Носете дреха с качулка — есенният дъжд идва без предупреждение.' }
+    },
+    warm: {
+      en: { title: 'Mild autumn day — flexible & comfortable.',
+            items: ['Long-sleeve cotton T-shirt','Light sweatshirt tied around the waist','Long trousers or jeans','Sneakers','Light hat if sunny'],
+            tip:   'Mid-day can feel like summer; mornings and evenings will not — pack accordingly.' },
+      bg: { title: 'Топъл есенен ден — гъвкаво и удобно.',
+            items: ['Памучна тениска с дълъг ръкав','Лек суитчър, вързан на кръста','Дълъг панталон или дънки','Маратонки','Лека шапка, ако е слънчево'],
+            tip:   'Обядно може да е като лято; сутрин и вечер не — стягайте се съобразно.' }
+    }
+  },
+  winter: {
+    cold: {
+      en: { title: 'Freezing winter day — full bundle required.',
+            items: ['Heavy winter coat (down or insulated)','Thermal base layer top + bottom','Warm sweater on top of thermal','Lined winter trousers or snow pants','Waterproof insulated boots with grip','Wool hat covering the ears, scarf, mittens (warmer than gloves)','Thick warm socks'],
+            tip:   "Below zero, limit playground time to 20–30 minute sessions with warm-up breaks." },
+      bg: { title: 'Леденостуден зимен ден — пълно екипиране.',
+            items: ['Дебело зимно палто (пухено или подплатено)','Термо бельо — горнище и долнище','Топъл пуловер върху термото','Подплатен зимен панталон или ски панталон','Водоустойчиви топли боти с грайфер','Вълнена шапка, покриваща ушите, шал, ръкавици-чорапки (по-топли от обикновените)','Дебели топли чорапи'],
+            tip:   'Под нулата ограничете играта на двора до 20–30 мин със стопляне между сесиите.' }
+    },
+    mild: {
+      en: { title: 'Cold winter day — warm but mobile.',
+            items: ['Padded winter jacket','Long-sleeve thermal or warm cotton shirt','Sweater or fleece','Warm trousers or lined jeans','Closed warm boots','Hat & gloves'],
+            tip:   "Children warm up fast while playing — choose a jacket they can unzip without removing." },
+      bg: { title: 'Студен зимен ден — топло, но удобно.',
+            items: ['Подплатено зимно яке','Термо блуза или топла памучна риза с дълъг ръкав','Пуловер или полар','Топъл панталон или подплатени дънки','Затворени топли боти','Шапка и ръкавици'],
+            tip:   'Децата се сгряват бързо при игра — изберете яке, което може да се разкопчае, без да се сваля.' }
+    },
+    warm: {
+      en: { title: 'Mild winter day — coat still essential.',
+            items: ['Light winter jacket or thick fleece','Long-sleeve T-shirt + light sweater','Long trousers','Closed shoes or light boots','Hat optional, gloves in the bag'],
+            tip:   'Mild winter days are deceptive — wind chill can drop the real feel by 5–7°C.' },
+      bg: { title: 'Мек зимен ден — палтото все още е задължително.',
+            items: ['Леко зимно яке или дебел полар','Тениска с дълъг ръкав + лек пуловер','Дълъг панталон','Затворени обувки или леки боти','Шапка по желание, ръкавици в чантата'],
+            tip:   'Меките зимни дни лъжат — вятърът може да свали усещаната температура с 5–7°C.' }
     }
   }
 };
@@ -794,50 +1108,103 @@ const ADDONS = {
   en: {
     rain:    (chance) => `Rain expected (${chance}% chance).`,
     rainItem: '🌂 Compact umbrella & water-resistant outer layer',
+    rainItemKid: '🌂 Rubber rain boots & waterproof trousers (kids will jump in puddles)',
     snowItem: '❄ Waterproof boots with grip',
-    windItem: '💨 A wind-cutting layer — avoid loose scarves'
+    snowItemKid: '❄ Snow gloves (mittens) & waterproof snow pants',
+    windItem: '💨 A wind-cutting layer — avoid loose scarves',
+    windItemKid: '💨 Hood up & secured — loose hats fly off in playground wind'
   },
   bg: {
     rain:    (chance) => `Очаква се дъжд (${chance}% вероятност).`,
     rainItem: '🌂 Компактен чадър и водоустойчив горен слой',
+    rainItemKid: '🌂 Гумени гумени ботуши и непромокаем панталон (децата ще скачат в локви)',
     snowItem: '❄ Водоустойчиви боти с грайфер',
-    windItem: '💨 Ветроустойчив слой — избягвайте свободни шалове'
+    snowItemKid: '❄ Снежни ръкавици (чорапки) и водоустойчив ски панталон',
+    windItem: '💨 Ветроустойчив слой — избягвайте свободни шалове',
+    windItemKid: '💨 Качулката горе и стегната — свободните шапки литват в двора'
   }
 };
 
-function getOutfit(temp, code, rainChance, wind, lang) {
+/* ============================================================
+   OUTFIT PICKER
+   ============================================================ */
+function getAdultBand(temp) {
+  if (temp <= 0) return 'arctic';
+  if (temp <= 8) return 'cold';
+  if (temp <= 15) return 'cool';
+  if (temp <= 22) return 'mild';
+  if (temp <= 28) return 'warm';
+  return 'hot';
+}
+
+/* For kids, "cold/mild/warm" thresholds shift up — kids feel cold sooner */
+function getKidBand(temp, season) {
+  if (season === 'winter') {
+    if (temp <= -2) return 'cold';
+    if (temp <= 6)  return 'mild';
+    return 'warm';
+  }
+  if (season === 'spring' || season === 'autumn') {
+    if (temp <= 8)  return 'cold';
+    if (temp <= 17) return 'mild';
+    return 'warm';
+  }
+  /* summer */
+  if (temp <= 20) return 'cold';
+  if (temp <= 27) return 'mild';
+  return 'warm';
+}
+
+function getOutfit(temp, code, rainChance, wind, lang, mode, season) {
   const iconKey = WMO[code] ? WMO[code].icon : 'cloud';
   const isWet = rainChance >= 40 || ['rain','storm'].includes(iconKey);
   const isSnow = iconKey === 'snow';
   const windy = wind >= 25;
 
-  let band;
-  if (temp <= 0) band = 'arctic';
-  else if (temp <= 8) band = 'cold';
-  else if (temp <= 15) band = 'cool';
-  else if (temp <= 22) band = 'mild';
-  else if (temp <= 28) band = 'warm';
-  else band = 'hot';
+  let o;
+  if (mode === 'kid') {
+    const band = getKidBand(temp, season);
+    o = OUTFITS_KID[season][band][lang];
+  } else {
+    const band = getAdultBand(temp);
+    o = OUTFITS_ADULT[band][lang];
+  }
 
-  const o = OUTFITS[band][lang];
   const items = [...o.items];
   let tip = o.tip;
+  const a = ADDONS[lang];
 
   if (isWet && !isSnow) {
-    items.push(ADDONS[lang].rainItem);
-    tip = `${ADDONS[lang].rain(rainChance)} ${tip}`;
+    items.push(mode === 'kid' ? a.rainItemKid : a.rainItem);
+    tip = `${a.rain(rainChance)} ${tip}`;
   }
-  if (isSnow) items.push(ADDONS[lang].snowItem);
-  if (windy)  items.push(ADDONS[lang].windItem);
+  if (isSnow) items.push(mode === 'kid' ? a.snowItemKid : a.snowItem);
+  if (windy)  items.push(mode === 'kid' ? a.windItemKid : a.windItem);
 
   return { title: o.title, items, tip };
 }
 
 /* ============================================================
-   STATE & CACHE
+   STATE
    ============================================================ */
 let currentLang = (localStorage.getItem('weather-lang') === 'bg') ? 'bg' : 'en';
-let lastData = {};   // cache so language switch doesn't need network
+let currentMode = (localStorage.getItem('weather-mode') === 'kid') ? 'kid' : 'adult';
+let lastData = {};
+
+/* ============================================================
+   FETCH
+   ============================================================ */
+async function fetchCity(city) {
+  const url = `https://api.open-meteo.com/v1/forecast?latitude=${city.lat}&longitude=${city.lon}` +
+    `&current=temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,wind_speed_10m,precipitation` +
+    `&hourly=temperature_2m,weather_code,precipitation_probability` +
+    `&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max` +
+    `&timezone=${encodeURIComponent(city.tz)}&forecast_days=5&past_days=0` +
+    `&wind_speed_unit=kmh&temperature_unit=celsius`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error('Network ' + res.status);
+  return res.json();
+}
 
 /* ============================================================
    RENDER
@@ -854,9 +1221,9 @@ function applyStaticLang() {
   document.getElementById('f-credit').textContent = t.credit;
   document.getElementById('f-data').innerHTML = t.dataLabel + '<a href="https://open-meteo.com" target="_blank">open-meteo.com</a>';
 
-  /* Per-card static elements */
   document.querySelectorAll('[data-feel-label]').forEach(el => el.textContent = t.feelLabel);
-  document.querySelectorAll('[data-clothing-h]').forEach(el => el.textContent = t.clothingH);
+  document.querySelectorAll('[data-clothing-h]').forEach(el => el.textContent = t.clothingH[currentMode]);
+  document.querySelectorAll('[data-h]').forEach(el => el.textContent = t.sections[el.dataset.h]);
   document.querySelectorAll('.city-num').forEach(el => {
     el.textContent = t.no + ' ' + el.dataset.num;
   });
@@ -864,18 +1231,22 @@ function applyStaticLang() {
     el.textContent = t.labels[el.dataset.lbl];
   });
 
-  /* City names & countries */
   document.querySelectorAll('.card').forEach(card => {
     const id = card.dataset.city;
     card.querySelector('[data-city-name]').textContent = t.cities[id].name;
     card.querySelector('[data-city-country]').textContent = t.cities[id].country;
   });
 
-  /* Toggle buttons */
   document.getElementById('btn-en').classList.toggle('active', currentLang === 'en');
   document.getElementById('btn-bg').classList.toggle('active', currentLang === 'bg');
+  document.getElementById('btn-adult').classList.toggle('active', currentMode === 'adult');
+  document.getElementById('btn-kid').classList.toggle('active', currentMode === 'kid');
 
-  /* Date in masthead */
+  /* Toggle kid-mode visual styling on each clothing block */
+  document.querySelectorAll('.clothing').forEach(c => {
+    c.classList.toggle('kid-mode', currentMode === 'kid');
+  });
+
   const now = new Date();
   document.getElementById('masthead-date').textContent =
     now.toLocaleDateString(t.locale, { weekday:'long', day:'numeric', month:'long', year:'numeric' });
@@ -885,6 +1256,7 @@ function applyStaticLang() {
 
 function renderCity(cityId, data) {
   const t = I18N[currentLang];
+  const city = CITIES.find(c => c.id === cityId);
   const card = document.querySelector(`.card[data-city="${cityId}"]`);
   if (!card) return;
   card.classList.remove('loading');
@@ -904,7 +1276,36 @@ function renderCity(cityId, data) {
   card.querySelector('.s-hum').innerHTML  = Math.round(cur.relative_humidity_2m) + '<small>%</small>';
   card.querySelector('.s-rain').innerHTML = rainChance + '<small>%</small>';
 
-  /* 5-day forecast */
+  /* HOURLY (next 24h, starting from current hour) */
+  const hr = document.getElementById(`hr-${cityId}`);
+  hr.innerHTML = '';
+  const nowHour = new Date().getHours();
+  const hourly = data.hourly;
+  /* Find index of current hour (open-meteo returns hourly times in city tz) */
+  let startIdx = 0;
+  for (let i = 0; i < hourly.time.length; i++) {
+    const h = new Date(hourly.time[i]).getHours();
+    if (h === nowHour) { startIdx = i; break; }
+  }
+  for (let i = 0; i < 24; i++) {
+    const idx = startIdx + i;
+    if (idx >= hourly.time.length) break;
+    const date = new Date(hourly.time[idx]);
+    const h = date.getHours();
+    const isNow = i === 0;
+    const hCode = hourly.weather_code[idx];
+    const hIcon = TINY_ICON[(WMO[hCode] || {icon:'cloud'}).icon] || '☁';
+    const hRain = hourly.precipitation_probability[idx] ?? 0;
+    hr.innerHTML += `
+      <div class="hour ${isNow ? 'now' : ''}">
+        <div class="ht">${isNow ? t.now : (h.toString().padStart(2,'0') + ':00')}</div>
+        <div class="hi">${hIcon}</div>
+        <div class="hv">${Math.round(hourly.temperature_2m[idx])}°</div>
+        <div class="hr">${hRain >= 20 ? hRain + '%' : '·'}</div>
+      </div>`;
+  }
+
+  /* DAILY */
   const fc = document.getElementById(`fc-${cityId}`);
   fc.innerHTML = '';
   for (let i = 0; i < 5; i++) {
@@ -920,13 +1321,17 @@ function renderCity(cityId, data) {
       </div>`;
   }
 
-  /* Clothing */
-  const outfit = getOutfit(cur.temperature_2m, code, rainChance, cur.wind_speed_10m, currentLang);
+  /* CLOTHING */
+  const month = new Date().getMonth();
+  const season = getSeason(month, city.hemisphere);
+  document.getElementById(`season-${cityId}`).textContent = t.seasons[season];
+
+  const outfit = getOutfit(cur.temperature_2m, code, rainChance, cur.wind_speed_10m, currentLang, currentMode, season);
   document.getElementById(`outfit-title-${cityId}`).textContent = outfit.title;
   document.getElementById(`outfit-list-${cityId}`).innerHTML =
     outfit.items.map(it => `<li>${it}</li>`).join('');
   document.getElementById(`tip-${cityId}`).innerHTML =
-    `<b>${t.stylistNote}</b> ${outfit.tip}`;
+    `<b>${t.stylistNote[currentMode]}</b> ${outfit.tip}`;
 }
 
 function renderError(cityId, msg) {
@@ -943,19 +1348,6 @@ function renderAllFromCache() {
   Object.keys(lastData).forEach(id => renderCity(id, lastData[id]));
 }
 
-/* ============================================================
-   FETCH (real-time)
-   ============================================================ */
-async function fetchCity(city) {
-  const url = `https://api.open-meteo.com/v1/forecast?latitude=${city.lat}&longitude=${city.lon}` +
-    `&current=temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,wind_speed_10m,precipitation` +
-    `&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max` +
-    `&timezone=${encodeURIComponent(city.tz)}&forecast_days=5&wind_speed_unit=kmh&temperature_unit=celsius`;
-  const res = await fetch(url);
-  if (!res.ok) throw new Error('Network ' + res.status);
-  return res.json();
-}
-
 async function refreshAll() {
   applyStaticLang();
   await Promise.all(CITIES.map(async c => {
@@ -963,9 +1355,6 @@ async function refreshAll() {
       const d = await fetchCity(c);
       lastData[c.id] = d;
       renderCity(c.id, d);
-      const card = document.querySelector(`.card[data-city="${c.id}"]`);
-      card.classList.add('refresh-flash');
-      setTimeout(() => card.classList.remove('refresh-flash'), 800);
     } catch (e) {
       renderError(c.id, e.message);
       console.error(c.id, e);
@@ -974,35 +1363,38 @@ async function refreshAll() {
 }
 
 /* ============================================================
-   LANGUAGE SWITCH
+   TOGGLES
    ============================================================ */
 function setLang(lang) {
   if (lang === currentLang) return;
   currentLang = lang;
   localStorage.setItem('weather-lang', lang);
-
-  /* If we have cached data, just re-render with new strings (no network) */
-  if (Object.keys(lastData).length === CITIES.length) {
-    renderAllFromCache();
-  } else {
-    applyStaticLang();
-  }
-
-  /* Subtle fade animation on cards */
+  if (Object.keys(lastData).length === CITIES.length) renderAllFromCache();
+  else applyStaticLang();
+  flashFade();
+}
+function setMode(mode) {
+  if (mode === currentMode) return;
+  currentMode = mode;
+  localStorage.setItem('weather-mode', mode);
+  if (Object.keys(lastData).length === CITIES.length) renderAllFromCache();
+  else applyStaticLang();
+  flashFade();
+}
+function flashFade() {
   document.querySelectorAll('.card').forEach(c => {
     c.classList.remove('lang-fade');
-    void c.offsetWidth; // restart animation
+    void c.offsetWidth;
     c.classList.add('lang-fade');
   });
 }
 
 /* ============================================================
-   INITIAL LOAD + AUTO-REFRESH every 10 min
+   INIT
    ============================================================ */
 applyStaticLang();
 refreshAll();
 setInterval(refreshAll, 10 * 60 * 1000);
-
 document.addEventListener('visibilitychange', () => {
   if (!document.hidden) refreshAll();
 });
