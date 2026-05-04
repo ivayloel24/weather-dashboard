@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Tri-City Weather · Amsterdam · Sofia · Shenzhen</title>
+<title>Four-City Weather · Amsterdam · Sofia · Shenzhen · Ruse</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,700;1,9..144,400&family=JetBrains+Mono:wght@400;500&family=Inter+Tight:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -153,11 +153,14 @@
   /* ===== Grid ===== */
   .grid {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr);
     gap: 0;
     border-left: 1px solid var(--ink);
   }
-  @media (max-width: 980px) {
+  @media (max-width: 1200px) {
+    .grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  }
+  @media (max-width: 700px) {
     .grid { grid-template-columns: 1fr; border-left: none; }
     .wrap { padding: 16px 12px 40px; }
     .masthead { grid-template-columns: 1fr; text-align: center; }
@@ -174,7 +177,7 @@
     position: relative;
     min-width: 0;
   }
-  @media (max-width: 980px) {
+  @media (max-width: 700px) {
     .card { border-right: none; border-bottom: 1px solid var(--ink); }
     .card:first-child { border-top: 1px solid var(--ink); }
   }
@@ -182,6 +185,7 @@
   .card.amsterdam { background: linear-gradient(180deg, #e8e4dc 0%, var(--paper) 60%); }
   .card.sofia { background: linear-gradient(180deg, #f0e8d4 0%, var(--paper) 60%); }
   .card.shenzhen { background: linear-gradient(180deg, #dfe8e3 0%, var(--paper) 60%); }
+  .card.ruse { background: linear-gradient(180deg, #ede8ee 0%, var(--paper) 60%); }
 
   .city-head {
     display: flex;
@@ -195,12 +199,27 @@
     color: var(--muted);
     letter-spacing: .1em;
   }
-  .city-flag {
+  .city-clock {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    letter-spacing: .15em;
+    font-size: 11px;
+    letter-spacing: .08em;
     color: var(--ink-soft);
-    text-transform: uppercase;
+    background: rgba(14, 17, 22, .06);
+    padding: 3px 8px 3px 7px;
+    border-radius: 3px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-variant-numeric: tabular-nums;
+  }
+  .city-clock::before {
+    content: "";
+    display: inline-block;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 0 2px rgba(200, 85, 61, .15);
   }
   .city-name {
     font-family: 'Fraunces', serif;
@@ -579,9 +598,10 @@
   .card-enter {
     animation: rise .7s ease both;
   }
-  .card-enter:nth-child(1) { animation-delay: .1s; }
-  .card-enter:nth-child(2) { animation-delay: .25s; }
-  .card-enter:nth-child(3) { animation-delay: .4s; }
+  .card-enter:nth-child(1) { animation-delay: .05s; }
+  .card-enter:nth-child(2) { animation-delay: .15s; }
+  .card-enter:nth-child(3) { animation-delay: .25s; }
+  .card-enter:nth-child(4) { animation-delay: .35s; }
   @keyframes rise {
     from { opacity: 0; transform: translateY(12px); }
     to   { opacity: 1; transform: translateY(0); }
@@ -630,7 +650,7 @@
     <article class="card card-enter amsterdam loading" data-city="amsterdam">
       <div class="city-head">
         <span class="city-num" data-num="01">No. 01</span>
-        <span class="city-flag">NL · 52.37°N</span>
+        <span class="city-clock" id="clock-amsterdam">--:--</span>
       </div>
       <h2 class="city-name" data-city-name>Amsterdam</h2>
       <p class="city-country" data-city-country>the Netherlands</p>
@@ -670,7 +690,7 @@
     <article class="card card-enter sofia loading" data-city="sofia">
       <div class="city-head">
         <span class="city-num" data-num="02">No. 02</span>
-        <span class="city-flag">BG · 42.70°N</span>
+        <span class="city-clock" id="clock-sofia">--:--</span>
       </div>
       <h2 class="city-name" data-city-name>Sofia</h2>
       <p class="city-country" data-city-country>Bulgaria</p>
@@ -710,7 +730,7 @@
     <article class="card card-enter shenzhen loading" data-city="shenzhen">
       <div class="city-head">
         <span class="city-num" data-num="03">No. 03</span>
-        <span class="city-flag">CN · 22.54°N</span>
+        <span class="city-clock" id="clock-shenzhen">--:--</span>
       </div>
       <h2 class="city-name" data-city-name>Shenzhen</h2>
       <p class="city-country" data-city-country>China</p>
@@ -747,6 +767,46 @@
       </div>
     </article>
 
+    <article class="card card-enter ruse loading" data-city="ruse">
+      <div class="city-head">
+        <span class="city-num" data-num="04">No. 04</span>
+        <span class="city-clock" id="clock-ruse">--:--</span>
+      </div>
+      <h2 class="city-name" data-city-name>Ruse</h2>
+      <p class="city-country" data-city-country>Bulgaria</p>
+
+      <div class="temp-block">
+        <div>
+          <div class="temp"><span class="t-now">--</span><span class="deg">°C</span></div>
+          <div class="feel"><span data-feel-label>Feels like</span> <span class="t-feel">--</span>°C</div>
+        </div>
+        <svg class="icon-art" viewBox="0 0 100 100" id="icon-ruse"></svg>
+      </div>
+      <p class="condition" id="cond-ruse">—</p>
+
+      <div class="stats">
+        <div class="stat"><span class="lbl" data-lbl="wind">Wind</span><span class="val s-wind">--<small>km/h</small></span></div>
+        <div class="stat"><span class="lbl" data-lbl="hum">Humidity</span><span class="val s-hum">--<small>%</small></span></div>
+        <div class="stat"><span class="lbl" data-lbl="rain">Rain</span><span class="val s-rain">--<small>%</small></span></div>
+      </div>
+
+      <div class="section-h" data-h="hourly">Next 12 Hours</div>
+      <div class="hourly" id="hr-ruse"></div>
+
+      <div class="section-h" data-h="daily">5-Day Forecast</div>
+      <div class="forecast" id="fc-ruse"></div>
+
+      <div class="clothing" id="clothing-ruse">
+        <div class="clothing-h">
+          <span data-clothing-h>Today's Wardrobe</span>
+          <span class="season-badge" id="season-ruse">—</span>
+        </div>
+        <div class="outfit-title" id="outfit-title-ruse">—</div>
+        <ul class="outfit-list" id="outfit-list-ruse"></ul>
+        <div class="tip" id="tip-ruse"></div>
+      </div>
+    </article>
+
   </div>
 
   <div class="foot">
@@ -765,7 +825,8 @@
 const CITIES = [
   { id: 'amsterdam', lat: 52.3676, lon: 4.9041, tz: 'Europe/Amsterdam', hemisphere: 'north' },
   { id: 'sofia',     lat: 42.6977, lon: 23.3219, tz: 'Europe/Sofia', hemisphere: 'north' },
-  { id: 'shenzhen',  lat: 22.5431, lon: 114.0579, tz: 'Asia/Shanghai', hemisphere: 'north_subtropical' }
+  { id: 'shenzhen',  lat: 22.5431, lon: 114.0579, tz: 'Asia/Shanghai', hemisphere: 'north_subtropical' },
+  { id: 'ruse',      lat: 43.8564, lon: 25.9656, tz: 'Europe/Sofia', hemisphere: 'north' }
 ];
 
 /* ============================================================
@@ -774,8 +835,8 @@ const CITIES = [
 const I18N = {
   en: {
     htmlLang: 'en', locale: 'en-GB',
-    masthead: { left: 'Vol. I &nbsp;·&nbsp; No. 02<br>Atmospheric Bulletin', title: 'The <b>Tri-City</b> <i>Weather</i>', live: 'Live · Updates 10 min' },
-    strapCities: 'Amsterdam · Sofia · Shenzhen',
+    masthead: { left: 'Vol. I &nbsp;·&nbsp; No. 03<br>Atmospheric Bulletin', title: 'The <b>Four-City</b> <i>Weather</i>', live: 'Live · Updates 10 min' },
+    strapCities: 'Amsterdam · Sofia · Shenzhen · Ruse',
     strapUnits: 'Temperature in °Celsius',
     feelLabel: 'Feels like',
     labels: { wind: 'Wind', hum: 'Humidity', rain: 'Rain' },
@@ -791,15 +852,16 @@ const I18N = {
     cities: {
       amsterdam: { name: 'Amsterdam', country: 'the Netherlands' },
       sofia:     { name: 'Sofia',     country: 'Bulgaria' },
-      shenzhen:  { name: 'Shenzhen',  country: 'China' }
+      shenzhen:  { name: 'Shenzhen',  country: 'China' },
+      ruse:      { name: 'Ruse',      country: 'Bulgaria' }
     },
     no: 'No.',
     now: 'NOW'
   },
   bg: {
     htmlLang: 'bg', locale: 'bg-BG',
-    masthead: { left: 'Том I &nbsp;·&nbsp; № 02<br>Атмосферен бюлетин', title: 'Времето в <b>трите града</b>', live: 'На живо · Обновява се на 10 мин' },
-    strapCities: 'Амстердам · София · Шенжен',
+    masthead: { left: 'Том I &nbsp;·&nbsp; № 03<br>Атмосферен бюлетин', title: 'Времето в <b>четирите града</b>', live: 'На живо · Обновява се на 10 мин' },
+    strapCities: 'Амстердам · София · Шенжен · Русе',
     strapUnits: 'Температура в °Целзий',
     feelLabel: 'Усеща се като',
     labels: { wind: 'Вятър', hum: 'Влажност', rain: 'Дъжд' },
@@ -815,7 +877,8 @@ const I18N = {
     cities: {
       amsterdam: { name: 'Амстердам', country: 'Нидерландия' },
       sofia:     { name: 'София',     country: 'България' },
-      shenzhen:  { name: 'Шенжен',    country: 'Китай' }
+      shenzhen:  { name: 'Шенжен',    country: 'Китай' },
+      ruse:      { name: 'Русе',      country: 'България' }
     },
     no: '№',
     now: 'СЕГА'
@@ -1271,6 +1334,9 @@ function applyStaticLang() {
     now.toLocaleDateString(t.locale, { weekday:'long', day:'numeric', month:'long', year:'numeric' });
   document.getElementById('last-update').textContent =
     `${t.lastUpdate} ${now.toLocaleTimeString(t.locale, { hour:'2-digit', minute:'2-digit', second:'2-digit' })}`;
+
+  /* Refresh city clocks too — they format using the locale */
+  if (typeof updateClocks === 'function') updateClocks();
 }
 
 function renderCity(cityId, data) {
@@ -1410,14 +1476,48 @@ function flashFade() {
 }
 
 /* ============================================================
+   LIVE LOCAL CLOCKS — each city shows its own local time
+   ============================================================ */
+function updateClocks() {
+  const t = I18N[currentLang];
+  const now = new Date();
+  for (const city of CITIES) {
+    const el = document.getElementById(`clock-${city.id}`);
+    if (!el) continue;
+    /* Use Intl.DateTimeFormat with the city's IANA timezone — gives the
+       correct local time regardless of where the viewer is located */
+    try {
+      const localTime = now.toLocaleTimeString(t.locale, {
+        timeZone: city.tz,
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+      });
+      el.textContent = localTime;
+    } catch (e) {
+      el.textContent = '--:--';
+    }
+  }
+}
+
+/* ============================================================
    INIT
    ============================================================ */
 applyStaticLang();
 refreshAll();
+updateClocks();
 setInterval(refreshAll, 10 * 60 * 1000);
+setInterval(updateClocks, 30 * 1000);
 document.addEventListener('visibilitychange', () => {
-  if (!document.hidden) refreshAll();
+  if (!document.hidden) { refreshAll(); updateClocks(); }
 });
+
+/* Strip the .card-enter class once the staggered entrance animation has
+   fully finished. This prevents the entrance animation from interfering
+   with subsequent .lang-fade animations on toggle clicks. */
+setTimeout(() => {
+  document.querySelectorAll('.card-enter').forEach(c => c.classList.remove('card-enter'));
+}, 1500);
 </script>
 </body>
 </html>
