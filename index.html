@@ -2,1440 +2,1485 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Four-City Weather · Amsterdam · Sofia · Shenzhen · Ruse</title>
+<meta name="viewport" content="width=device-width,initial-scale=1.0" />
+<title>Weather Bulletin · v2.4</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,700;1,9..144,400&family=JetBrains+Mono:wght@400;500&family=Inter+Tight:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,800;1,9..144,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
+  /* ============================================================
+     DESIGN TOKENS — editorial / atmospheric bulletin
+     ============================================================ */
   :root {
-    --ink: #0e1116;
-    --ink-soft: #2a2f37;
-    --paper: #f5f1ea;
-    --paper-warm: #ede6d8;
-    --accent: #c8553d;
-    --accent-2: #588b8b;
-    --gold: #d4a24c;
-    --muted: #6b6862;
-    --kid: #d96a8d;
+    --paper: #f4ede1;
+    --paper-2: #efe6d6;
+    --ink: #2b2622;
+    --ink-soft: #6b6259;
+    --rule: #c9bfae;
+    --accent-amsterdam: #6b7a8f;
+    --accent-sofia: #b07a3a;
+    --accent-ruse: #8b7a9c;
+    --accent-shenzhen: #5a7a55;
+    /* Kid mode: dusty rose — accent only, never dominant. Lives next to stone-grey/gold/sage. */
+    --kid: #a85a6e;
+    --kid-soft: #e8c8d0;
+    --kid-bg: #faf3f5;
+    --warn: #b04a3a;
+    --good: #5a7a55;
+
+    --display: 'Fraunces', Georgia, serif;
+    --mono: 'JetBrains Mono', ui-monospace, monospace;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
-
-  html, body {
-    background: var(--paper);
-    color: var(--ink);
-    font-family: 'Inter Tight', sans-serif;
-    overflow-x: hidden;
+  html, body { background: var(--paper); color: var(--ink); }
+  body {
+    font-family: var(--display);
     min-height: 100vh;
-  }
-
-  body::before {
-    content: "";
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    opacity: .35;
-    mix-blend-mode: multiply;
-    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence baseFrequency='.9' numOctaves='2'/></filter><rect width='100%25' height='100%25' filter='url(%23n)' opacity='.18'/></svg>");
-    z-index: 1;
-  }
-
-  .wrap {
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 18px 32px 28px;
+    padding: 28px 24px 60px;
+    background-image:
+      radial-gradient(circle at 15% 8%, rgba(176,122,58,0.07), transparent 45%),
+      radial-gradient(circle at 85% 92%, rgba(107,122,143,0.06), transparent 45%),
+      radial-gradient(circle at 50% 50%, rgba(90,122,85,0.03), transparent 60%);
     position: relative;
-    z-index: 2;
   }
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence baseFrequency='0.85' numOctaves='2' seed='3'/><feColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.06 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+    pointer-events: none; opacity: .55; z-index: 0;
+  }
+  main { position: relative; z-index: 1; max-width: 1500px; margin: 0 auto; }
 
-  /* ===== Top controls ===== */
-  .top-controls {
-    position: fixed;
-    top: 24px;
-    right: 24px;
-    z-index: 100;
-    display: flex;
-    gap: 10px;
-    align-items: center;
-  }
-  .toggle-pill {
-    display: flex;
-    background: var(--ink);
-    border-radius: 999px;
-    padding: 4px;
-    box-shadow: 0 6px 24px rgba(14,17,22,.18);
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    letter-spacing: .12em;
-  }
-  .toggle-pill button {
-    background: transparent;
-    border: none;
-    color: rgba(245,241,234,.55);
-    padding: 8px 14px;
-    border-radius: 999px;
-    cursor: pointer;
-    transition: all .25s ease;
-    font-family: inherit;
-    font-size: inherit;
-    letter-spacing: inherit;
-    font-weight: 500;
-    white-space: nowrap;
-  }
-  .toggle-pill button.active {
-    background: var(--paper);
-    color: var(--ink);
-  }
-  .toggle-pill.kid button.active { background: var(--kid); color: white; }
-  .toggle-pill button:not(.active):hover { color: var(--paper); }
-
-  /* ===== Masthead ===== */
+  /* ============================================================
+     MASTHEAD
+     ============================================================ */
   .masthead {
-    border-top: 3px solid var(--ink);
-    border-bottom: 1px solid var(--ink);
-    padding: 12px 0 10px;
+    border-bottom: 1.5px solid var(--ink);
+    padding-bottom: 14px;
+    margin-bottom: 22px;
     display: grid;
-    grid-template-columns: 1fr auto 1fr;
+    grid-template-columns: 1fr auto;
     align-items: end;
     gap: 24px;
-    margin-bottom: 16px;
   }
-  .masthead .left, .masthead .right {
-    font-family: 'JetBrains Mono', monospace;
+  .masthead h1 {
+    font-family: var(--display);
+    font-weight: 800;
+    font-size: clamp(36px, 5vw, 64px);
+    line-height: .95;
+    letter-spacing: -0.02em;
+    font-style: italic;
+  }
+  /* Bulgarian title is ~60% longer than English at the same font size.
+     Reduce it so both versions occupy similar visual space in the masthead. */
+  body.lang-bg .masthead h1 {
+    font-size: clamp(28px, 3.4vw, 44px);
+    letter-spacing: -0.015em;
+  }
+  .masthead h1 .v {
+    font-style: normal;
+    font-size: .35em;
+    vertical-align: super;
+    color: var(--ink-soft);
+    letter-spacing: 0.05em;
+    margin-left: 8px;
+    font-family: var(--mono);
+    font-weight: 600;
+  }
+  .masthead .tag {
+    font-family: var(--mono);
     font-size: 11px;
-    letter-spacing: .12em;
+    letter-spacing: 0.18em;
     text-transform: uppercase;
     color: var(--ink-soft);
+    margin-top: 6px;
   }
-  .masthead .right { text-align: right; }
-  .masthead .title {
-    font-family: 'Fraunces', serif;
-    font-weight: 400;
-    font-style: italic;
-    font-size: clamp(28px, 4vw, 56px);
-    line-height: .95;
-    letter-spacing: -.02em;
-    text-align: center;
-    white-space: nowrap;
+  .masthead .live-dot {
+    display: inline-block; width: 7px; height: 7px;
+    background: var(--warn); border-radius: 50%;
+    margin-right: 6px; vertical-align: middle;
+    animation: pulse 1.6s infinite;
   }
-  .masthead .title b { font-style: normal; font-weight: 700; }
-  .live-dot {
-    display: inline-block;
-    width: 7px; height: 7px;
-    border-radius: 50%;
-    background: var(--accent);
-    margin-right: 6px;
-    animation: pulse 1.6s ease-in-out infinite;
-    vertical-align: middle;
-  }
-  @keyframes pulse {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: .4; transform: scale(.8); }
-  }
+  @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:.3;} }
 
-  .strap {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10.5px;
-    letter-spacing: .15em;
+  /* Today date — sits below tagline, prominent enough to scan at a glance */
+  .today-date {
+    margin-top: 12px;
+    display: inline-flex;
+    align-items: baseline;
+    gap: 10px;
+    background: rgba(255,255,255,.55);
+    border: 1px solid var(--rule);
+    border-left: 3px solid var(--accent-sofia);
+    border-radius: 3px;
+    padding: 6px 12px;
+    font-family: var(--display);
+  }
+  .today-date .today-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.18em;
     text-transform: uppercase;
-    color: var(--muted);
-    border-bottom: 1px solid var(--ink);
-    padding-bottom: 8px;
-    margin-bottom: 18px;
-    gap: 16px;
+    color: var(--ink-soft);
+    font-weight: 600;
   }
-  .strap .dots { letter-spacing: .4em; flex: 1; text-align: center; overflow: hidden; }
+  .today-date .today-value {
+    font-family: var(--display);
+    font-style: italic;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--ink);
+    letter-spacing: -0.005em;
+  }
 
-  /* ===== Grid ===== */
+  /* ============================================================
+     TOGGLES
+     ============================================================ */
+  .toggles { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .toggle-group {
+    display: inline-flex;
+    border: 1.5px solid var(--ink);
+    border-radius: 999px;
+    overflow: hidden;
+    background: var(--paper);
+  }
+  .toggle-group button {
+    border: none; background: transparent;
+    font-family: var(--mono); font-weight: 600; font-size: 12px;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    padding: 8px 16px; cursor: pointer; color: var(--ink-soft);
+    transition: all .25s ease;
+  }
+  .toggle-group button.active {
+    background: var(--ink); color: var(--paper);
+  }
+  .toggle-group.kid-group { border-color: var(--kid); }
+  .toggle-group.kid-group button.active {
+    background: var(--kid); color: white;
+  }
+
+  /* ============================================================
+     CITY GRID
+     ============================================================ */
   .grid {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr);
-    gap: 0;
-    border-left: 1px solid var(--ink);
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 18px;
   }
-  @media (max-width: 1200px) {
-    .grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
-  }
-  @media (max-width: 700px) {
-    .grid { grid-template-columns: 1fr; border-left: none; }
-    .wrap { padding: 16px 12px 40px; }
-    .masthead { grid-template-columns: 1fr; text-align: center; }
-    .masthead .right, .masthead .left { text-align: center; }
-    .top-controls { top: 8px; right: 8px; flex-direction: column; align-items: flex-end; gap: 6px; }
-    .strap .dots { display: none; }
+  @media (max-width: 1400px) { .grid { grid-template-columns: repeat(3, minmax(0,1fr)); } }
+  @media (max-width: 1100px) { .grid { grid-template-columns: repeat(2, minmax(0,1fr)); } }
+  @media (max-width: 720px)  {
+    .grid { grid-template-columns: 1fr; }
+    body { padding: 16px 12px 40px; }
+    .masthead { grid-template-columns: 1fr; gap: 12px; }
+    .card { box-shadow: 3px 3px 0 var(--ink); }
+    .card.kid { /* editorial palette preserved; pink lives only in headers, badges, accents */ }
   }
 
   .card {
-    border-right: 1px solid var(--ink);
-    border-bottom: 1px solid var(--ink);
-    padding: 14px 16px 16px;
-    background: var(--paper);
+    background: var(--paper-2);
+    border: 1.5px solid var(--ink);
+    border-radius: 4px;
+    padding: 22px 22px 18px;
     position: relative;
-    min-width: 0;
+    box-shadow: 4px 4px 0 var(--ink);
+    transition: background .35s ease;
+    min-height: 200px;
   }
-  @media (max-width: 700px) {
-    .card { border-right: none; border-bottom: 1px solid var(--ink); }
-    .card:first-child { border-top: 1px solid var(--ink); }
+  /* Per-city subtle washes (restored from v1) */
+  .card[data-city="amsterdam"] {
+    background:
+      linear-gradient(180deg, #e8e4dc 0%, var(--paper-2) 55%);
+  }
+  .card[data-city="sofia"] {
+    background:
+      linear-gradient(180deg, #f0e8d4 0%, var(--paper-2) 55%);
+  }
+  .card[data-city="ruse"] {
+    background:
+      linear-gradient(180deg, #ede7ee 0%, var(--paper-2) 55%);
+  }
+  .card[data-city="shenzhen"] {
+    background:
+      linear-gradient(180deg, #dfe8e3 0%, var(--paper-2) 55%);
+  }
+  /* Kid mode: keep the city wash + ink shadow dominant. Only city-band gains a subtle pink under-stripe. */
+  .card.kid[data-city="amsterdam"] {
+    background:
+      linear-gradient(180deg, #e8e4dc 0%, var(--paper-2) 55%);
+  }
+  .card.kid[data-city="sofia"] {
+    background:
+      linear-gradient(180deg, #f0e8d4 0%, var(--paper-2) 55%);
+  }
+  .card.kid[data-city="ruse"] {
+    background:
+      linear-gradient(180deg, #ede7ee 0%, var(--paper-2) 55%);
+  }
+  .card.kid[data-city="shenzhen"] {
+    background:
+      linear-gradient(180deg, #dfe8e3 0%, var(--paper-2) 55%);
   }
 
-  .card.amsterdam { background: linear-gradient(180deg, #e8e4dc 0%, var(--paper) 60%); }
-  .card.sofia { background: linear-gradient(180deg, #f0e8d4 0%, var(--paper) 60%); }
-  .card.shenzhen { background: linear-gradient(180deg, #dfe8e3 0%, var(--paper) 60%); }
-  .card.ruse { background: linear-gradient(180deg, #ede8ee 0%, var(--paper) 60%); }
+  .card .city-band {
+    position: absolute; top: 0; left: 0; right: 0; height: 4px;
+  }
+  [data-city="amsterdam"] .city-band { background: var(--accent-amsterdam); }
+  [data-city="sofia"]     .city-band { background: var(--accent-sofia); }
+  [data-city="ruse"]      .city-band { background: var(--accent-ruse); }
+  [data-city="shenzhen"]  .city-band { background: var(--accent-shenzhen); }
 
   .city-head {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    margin-bottom: 4px;
+    display: flex; justify-content: space-between; align-items: flex-start;
+    border-bottom: 1px solid var(--rule);
+    padding-bottom: 10px; margin-bottom: 12px;
+    gap: 10px;
   }
-  .city-num {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    color: var(--muted);
-    letter-spacing: .1em;
-  }
+  .city-head-left { flex: 1; min-width: 0; }
+  .city-head-right { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
   .city-clock {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    letter-spacing: .08em;
-    color: var(--ink-soft);
-    background: rgba(14, 17, 22, .06);
-    padding: 3px 8px 3px 7px;
-    border-radius: 3px;
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
+    font-family: var(--mono); font-size: 13px; font-weight: 600;
+    color: var(--ink); letter-spacing: 0.04em;
+    background: rgba(255,255,255,.55);
+    border: 1px solid var(--rule);
+    padding: 3px 8px; border-radius: 3px;
+    white-space: nowrap;
     font-variant-numeric: tabular-nums;
   }
-  .city-clock::before {
-    content: "";
-    display: inline-block;
-    width: 5px;
-    height: 5px;
-    border-radius: 50%;
-    background: var(--accent);
-    box-shadow: 0 0 0 2px rgba(200, 85, 61, .15);
+  .city-clock .clock-tz {
+    font-size: 9px; color: var(--ink-soft);
+    margin-left: 4px; letter-spacing: 0.1em;
   }
   .city-name {
-    font-family: 'Fraunces', serif;
-    font-size: 32px;
-    font-weight: 500;
-    letter-spacing: -.02em;
-    line-height: 1;
-    margin: 4px 0 1px;
+    font-family: var(--display); font-weight: 800;
+    font-size: 26px; letter-spacing: -0.01em; line-height: 1;
   }
-  .city-country {
-    font-family: 'Fraunces', serif;
-    font-style: italic;
-    font-weight: 300;
-    font-size: 14px;
-    color: var(--muted);
+  .city-meta {
+    font-family: var(--mono); font-size: 10px;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--ink-soft); margin-top: 4px;
+  }
+  .season-badge {
+    font-family: var(--mono); font-size: 10px;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    background: var(--ink); color: var(--paper);
+    padding: 4px 8px; border-radius: 2px;
+    align-self: flex-start;
+  }
+  .card.kid .season-badge { background: var(--kid); }
+
+  /* ============================================================
+     CURRENT READOUT
+     ============================================================ */
+  .now {
+    display: grid;
+    grid-template-columns: auto auto 1fr;
+    gap: 12px; align-items: center;
     margin-bottom: 14px;
   }
-
-  /* ===== Big temp + animated icon ===== */
-  .temp-block {
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-    margin: 6px 0 8px;
-  }
   .temp {
-    font-family: 'Fraunces', serif;
-    font-weight: 300;
-    font-size: 64px;
-    line-height: .85;
-    letter-spacing: -.05em;
+    font-family: var(--display); font-style: italic; font-weight: 800;
+    font-size: 56px; line-height: .9; letter-spacing: -0.04em;
   }
-  .temp .deg {
-    font-size: 24px;
-    vertical-align: top;
-    margin-left: 3px;
-    color: var(--accent);
-  }
-  .icon-art {
-    width: 60px;
-    height: 60px;
-    flex-shrink: 0;
-    margin-top: 2px;
-  }
-  .feel {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 9px;
-    letter-spacing: .1em;
-    text-transform: uppercase;
-    color: var(--muted);
-    margin-top: 2px;
-  }
-  .condition {
-    font-family: 'Fraunces', serif;
-    font-style: italic;
-    font-size: 15px;
-    margin-bottom: 8px;
-    color: var(--ink-soft);
+  .temp .deg { font-size: .4em; vertical-align: super; font-style: normal; color: var(--ink-soft); }
+  .now-detail { font-family: var(--mono); font-size: 11px; line-height: 1.7; color: var(--ink-soft); }
+  .now-detail .cond {
+    font-family: var(--display); font-style: italic;
+    font-size: 16px; color: var(--ink); display: block; margin-bottom: 4px;
   }
 
-  /* ===== Animated icon styles ===== */
-  .anim-sun-rays {
-    transform-origin: 50px 50px;
-    animation: sunRotate 20s linear infinite;
-  }
-  @keyframes sunRotate { to { transform: rotate(360deg); } }
-
-  .anim-sun-core {
-    transform-origin: 50px 50px;
-    animation: sunPulse 3s ease-in-out infinite;
-  }
-  @keyframes sunPulse {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.08); }
-  }
-
-  .anim-cloud {
-    animation: cloudDrift 6s ease-in-out infinite;
-  }
-  @keyframes cloudDrift {
-    0%, 100% { transform: translateX(0); }
-    50% { transform: translateX(3px); }
-  }
-
-  .anim-raindrop {
-    animation: rainFall 1.4s linear infinite;
-    opacity: 0;
-  }
-  .anim-raindrop:nth-child(2) { animation-delay: .3s; }
-  .anim-raindrop:nth-child(3) { animation-delay: .6s; }
-  .anim-raindrop:nth-child(4) { animation-delay: .9s; }
-  @keyframes rainFall {
-    0%   { transform: translateY(-4px); opacity: 0; }
-    20%  { opacity: 1; }
-    80%  { opacity: 1; }
-    100% { transform: translateY(18px); opacity: 0; }
-  }
-
-  .anim-snow {
-    animation: snowFall 3s linear infinite;
-    transform-origin: center;
-    opacity: 0;
-  }
-  .anim-snow:nth-child(2) { animation-delay: .8s; }
-  .anim-snow:nth-child(3) { animation-delay: 1.6s; }
-  @keyframes snowFall {
-    0%   { transform: translateY(-4px) rotate(0deg); opacity: 0; }
-    20%  { opacity: 1; }
-    80%  { opacity: 1; }
-    100% { transform: translateY(20px) rotate(180deg); opacity: 0; }
-  }
-
-  .anim-bolt {
-    animation: lightning 2.4s ease-in-out infinite;
-    transform-origin: center;
-  }
-  @keyframes lightning {
-    0%, 40%, 100% { opacity: 1; }
-    45%, 50% { opacity: .2; }
-    55% { opacity: 1; }
-    60% { opacity: .3; }
-    65% { opacity: 1; }
-  }
-
-  .anim-fog {
-    animation: fogShift 4s ease-in-out infinite;
-  }
-  @keyframes fogShift {
-    0%, 100% { transform: translateX(0); }
-    50% { transform: translateX(4px); }
-  }
-
-  /* ===== Stats ===== */
-  .stats {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    border-top: 1px solid var(--ink);
-    border-bottom: 1px solid var(--ink);
-    margin-bottom: 10px;
-  }
-  .stat {
-    padding: 5px 6px 6px;
-    border-right: 1px dashed rgba(14,17,22,.25);
-    min-width: 0;
-  }
-  .stat:last-child { border-right: none; }
-  .stat .lbl {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 8.5px;
-    letter-spacing: .12em;
-    text-transform: uppercase;
-    color: var(--muted);
+  /* Animated weather icon */
+  .wx-icon {
+    width: 56px; height: 56px;
     display: block;
-    margin-bottom: 2px;
+    overflow: visible;
   }
-  .stat .val {
-    font-family: 'Fraunces', serif;
-    font-size: 16px;
-    font-weight: 500;
-    line-height: 1.1;
+  .wx-icon .sun-core { animation: pulse 3s ease-in-out infinite; transform-origin: center; transform-box: fill-box; }
+  .wx-icon .sun-rays { animation: spin 22s linear infinite; transform-origin: center; transform-box: fill-box; }
+  .wx-icon .cloud-drift { animation: drift 6s ease-in-out infinite; transform-origin: center; transform-box: fill-box; }
+  .wx-icon .drop { animation: fall 1.4s linear infinite; transform-origin: center; transform-box: fill-box; opacity: 0; }
+  .wx-icon .drop-1 { animation-delay: 0s; }
+  .wx-icon .drop-2 { animation-delay: 0.35s; }
+  .wx-icon .drop-3 { animation-delay: 0.7s; }
+  .wx-icon .drop-4 { animation-delay: 1.05s; }
+  .wx-icon .flake { animation: snowfall 3.5s linear infinite; transform-origin: center; transform-box: fill-box; opacity: 0; }
+  .wx-icon .flake-1 { animation-delay: 0s; }
+  .wx-icon .flake-2 { animation-delay: 1.2s; }
+  .wx-icon .flake-3 { animation-delay: 2.4s; }
+  .wx-icon .bolt { animation: flicker 2.4s ease-in-out infinite; transform-origin: center; transform-box: fill-box; }
+  .wx-icon .fog-bar { animation: fogshift 4s ease-in-out infinite; transform-origin: center; transform-box: fill-box; }
+  .wx-icon .fog-bar-1 { animation-delay: 0s; }
+  .wx-icon .fog-bar-2 { animation-delay: 0.6s; }
+  .wx-icon .fog-bar-3 { animation-delay: 1.2s; }
+
+  @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.08); } }
+  @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+  @keyframes drift { 0%, 100% { transform: translateX(-2px); } 50% { transform: translateX(2px); } }
+  @keyframes fall {
+    0% { transform: translateY(-4px); opacity: 0; }
+    20% { opacity: 1; }
+    80% { opacity: 1; }
+    100% { transform: translateY(14px); opacity: 0; }
   }
-  .stat .val small {
-    font-size: 10px;
-    color: var(--muted);
-    font-weight: 300;
-    margin-left: 2px;
+  @keyframes snowfall {
+    0% { transform: translateY(-4px) rotate(0); opacity: 0; }
+    20% { opacity: 1; }
+    80% { opacity: 1; }
+    100% { transform: translateY(14px) rotate(180deg); opacity: 0; }
+  }
+  @keyframes flicker {
+    0%, 60%, 100% { opacity: 1; }
+    62%, 70% { opacity: 0.3; }
+    66% { opacity: 1; }
+  }
+  @keyframes fogshift {
+    0%, 100% { transform: translateX(-3px); opacity: 0.5; }
+    50% { transform: translateX(3px); opacity: 0.9; }
   }
 
-  /* ===== Section headers ===== */
+  /* ============================================================
+     KID OUTFIT VISUALIZATION (NEW IN v2.0)
+     ============================================================ */
+  .outfit-stage {
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.55) 0%, rgba(255,255,255,.25) 100%);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: 14px 10px 10px;
+    margin-bottom: 12px;
+    text-align: center;
+    position: relative;
+  }
+  .outfit-stage .stage-label {
+    font-family: var(--mono); font-size: 10px;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--kid); margin-bottom: 6px; font-weight: 600;
+  }
+  .kid-figure {
+    width: 140px; height: 200px; margin: 0 auto;
+    display: block;
+  }
+  .outfit-caption {
+    font-family: var(--display); font-style: italic; font-size: 14px;
+    color: var(--ink); margin-top: 8px;
+    border-top: 1px solid var(--rule);
+    padding-top: 8px;
+  }
+
+  /* Layer breakdown chips — soft paper pills, kid color only on text */
+  .layer-chips {
+    display: flex; flex-wrap: wrap; gap: 4px;
+    margin-top: 8px; justify-content: center;
+  }
+  .chip {
+    font-family: var(--mono); font-size: 9px;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    background: rgba(255,255,255,.7); color: var(--ink-soft);
+    border: 1px solid var(--rule);
+    padding: 3px 7px; border-radius: 999px;
+    font-weight: 600;
+  }
+
+  /* ============================================================
+     CLOTHING LIST + TIPS
+     ============================================================ */
   .section-h {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 9px;
-    letter-spacing: .18em;
-    text-transform: uppercase;
-    color: var(--muted);
-    margin-bottom: 6px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
+    font-family: var(--mono); font-size: 10px;
+    letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--ink-soft); margin: 14px 0 6px;
+    padding-bottom: 4px; border-bottom: 1px solid var(--rule);
   }
-  .section-h::before { content: "›"; color: var(--accent); font-size: 12px; }
+  .card.kid .section-h.kid-h { color: var(--kid); border-bottom-color: var(--kid); }
 
-  /* ===== Hourly forecast strip ===== */
-  .hourly {
-    display: flex;
-    gap: 0;
-    overflow-x: auto;
-    overflow-y: hidden;
-    margin-bottom: 10px;
-    padding-bottom: 3px;
-    border-top: 1px solid var(--ink);
-    border-bottom: 1px dashed rgba(14,17,22,.25);
-    scrollbar-width: thin;
-    width: 100%;
-    max-width: 100%;
+  .list { list-style: none; padding: 0; margin: 0; }
+  .list li {
+    font-family: var(--display); font-size: 14px;
+    line-height: 1.55; padding-left: 16px; position: relative;
+    margin-bottom: 3px;
   }
-  .hourly::-webkit-scrollbar { height: 4px; }
-  .hourly::-webkit-scrollbar-track { background: transparent; }
-  .hourly::-webkit-scrollbar-thumb { background: rgba(14,17,22,.2); border-radius: 2px; }
-
-  .hour {
-    flex: 0 0 38px;
-    text-align: center;
-    padding: 4px 2px 4px;
-    border-right: 1px dashed rgba(14,17,22,.15);
-    position: relative;
+  .list li::before {
+    content: '•'; position: absolute; left: 4px; color: var(--ink-soft);
   }
-  .hour:last-child { border-right: none; }
-  .hour.now {
-    background: rgba(200, 85, 61, .08);
-    border-right: 1px solid var(--accent);
-  }
-  .hour .ht {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 8.5px;
-    letter-spacing: .05em;
-    color: var(--muted);
-    margin-bottom: 2px;
-  }
-  .hour.now .ht { color: var(--accent); font-weight: 500; }
-  .hour .hi { font-size: 14px; margin-bottom: 1px; line-height: 1.1; }
-  .hour .hv {
-    font-family: 'Fraunces', serif;
-    font-size: 14px;
-    font-weight: 500;
-    line-height: 1;
-  }
-  .hour .hr {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 8px;
-    color: var(--accent-2);
-    margin-top: 1px;
-    line-height: 1;
-  }
-
-  /* ===== Daily forecast ===== */
-  .forecast {
-    display: grid;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
-    gap: 0;
-    margin-bottom: 10px;
-    border-top: 1px solid var(--ink);
-  }
-  .fday {
-    padding: 5px 2px 6px;
-    text-align: center;
-    border-right: 1px dashed rgba(14,17,22,.25);
-    min-width: 0;
-  }
-  .fday:last-child { border-right: none; }
-  .fday .d {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 9px;
-    letter-spacing: .1em;
-    text-transform: uppercase;
-    color: var(--muted);
-    margin-bottom: 4px;
-  }
-  .fday .ic { font-size: 15px; margin-bottom: 2px; line-height: 1; }
-  .fday .t {
-    font-family: 'Fraunces', serif;
-    font-size: 13px;
-    font-weight: 500;
-  }
-  .fday .t small { color: var(--muted); font-weight: 300; font-size: 10px; }
-
-  /* ===== Clothing ===== */
-  .clothing {
-    border-top: 2px solid var(--ink);
-    padding-top: 9px;
-    margin-top: 2px;
-  }
-  .clothing-h {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 9px;
-    letter-spacing: .18em;
-    text-transform: uppercase;
-    color: var(--accent);
-    margin-bottom: 6px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-  .clothing-h::before { content: "✦"; color: var(--gold); }
-  .clothing.kid-mode .clothing-h { color: var(--kid); }
-  .clothing.kid-mode .clothing-h::before { content: "👶"; }
-
-  .season-badge {
-    display: inline-block;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 8px;
-    letter-spacing: .12em;
-    text-transform: uppercase;
-    background: var(--ink);
-    color: var(--paper);
-    padding: 2px 6px;
-    border-radius: 2px;
-    margin-left: auto;
-  }
-  .clothing.kid-mode .season-badge { background: var(--kid); }
-
-  .outfit-title {
-    font-family: 'Fraunces', serif;
-    font-style: italic;
-    font-weight: 400;
-    font-size: 13.5px;
-    margin-bottom: 5px;
-    color: var(--ink);
-    line-height: 1.25;
-  }
-  .outfit-list {
-    list-style: none;
-    font-size: 11.5px;
-    line-height: 1.4;
-    color: var(--ink-soft);
-  }
-  .outfit-list li {
-    padding-left: 12px;
-    position: relative;
-    margin-bottom: 1px;
-  }
-  .outfit-list li::before {
-    content: "—";
-    position: absolute;
-    left: 0;
-    color: var(--accent);
-  }
-  .clothing.kid-mode .outfit-list li::before { color: var(--kid); }
+  .card.kid .list li::before { color: var(--kid); }
 
   .tip {
-    margin-top: 7px;
-    padding: 6px 8px;
-    background: rgba(212, 162, 76, .12);
-    border-left: 2px solid var(--gold);
-    font-family: 'Fraunces', serif;
-    font-style: italic;
-    font-size: 11.5px;
-    color: var(--ink-soft);
-    line-height: 1.35;
+    margin-top: 10px;
+    padding: 10px 12px;
+    background: rgba(255,255,255,.6);
+    border-left: 3px solid var(--ink-soft);
+    font-family: var(--display); font-style: italic;
+    font-size: 13px; line-height: 1.5;
   }
-  .clothing.kid-mode .tip {
-    background: rgba(217, 106, 141, .08);
+  .card.kid .tip {
     border-left-color: var(--kid);
+    background: rgba(255,255,255,.7);
   }
-  .tip b { font-style: normal; font-weight: 600; color: var(--ink); }
 
-  .foot {
-    margin-top: 22px;
-    padding-top: 12px;
-    border-top: 1px solid var(--ink);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 9.5px;
-    letter-spacing: .12em;
-    text-transform: uppercase;
-    color: var(--muted);
-    flex-wrap: wrap;
+  /* parent visualization box (v2.0 NEW) */
+  .parent-advice {
+    margin-top: 12px;
+    border: 1px solid var(--rule);
+    border-top: 2px solid var(--kid);
+    border-radius: 4px;
+    background: rgba(255,255,255,.5);
+    padding: 10px 12px;
+    display: none;
+  }
+  .card.kid .parent-advice { display: block; }
+  .parent-advice .pa-h {
+    font-family: var(--mono); font-size: 10px;
+    letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--kid); font-weight: 600; margin-bottom: 6px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .pa-row {
+    display: grid;
+    grid-template-columns: auto 1fr;
     gap: 8px;
+    align-items: center;
+    padding: 4px 0;
+    border-bottom: 1px solid var(--rule);
+    font-family: var(--display); font-size: 13px;
   }
-  .foot a {
+  .pa-row:last-child { border-bottom: none; }
+  .pa-row .day {
+    font-family: var(--mono); font-size: 10px;
+    letter-spacing: 0.1em; text-transform: uppercase;
     color: var(--ink-soft);
-    text-decoration: none;
-    border-bottom: 1px solid var(--muted);
+  }
+  .pa-row .mini {
+    width: 28px; height: 40px;
+  }
+  .pa-row .pa-text { font-style: italic; }
+  .pa-row .pa-temp {
+    font-family: var(--mono); font-size: 11px; font-weight: 600;
+    color: var(--ink); margin-left: auto;
   }
 
-  .loading .temp { opacity: .3; }
+  /* ============================================================
+     5-DAY FORECAST (kept compact)
+     ============================================================ */
+  .forecast {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 4px;
+    margin-top: 8px;
+  }
+  .day {
+    text-align: center;
+    background: rgba(255,255,255,.4);
+    border-radius: 2px;
+    padding: 8px 4px;
+  }
+  .day .dn { font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; color: var(--ink-soft); text-transform: uppercase; }
+  .day .dt { font-family: var(--display); font-style: italic; font-size: 16px; font-weight: 600; margin-top: 2px; }
+  .day .dl { font-family: var(--mono); font-size: 10px; color: var(--ink-soft); }
 
-  /* Card has stable visible resting state. Entrance animation only runs on
-     initial load via the .card-enter class, which rises from opacity 0. */
-  .card {
-    opacity: 1;
-    transform: translateY(0);
+  /* loading / error */
+  .loading, .err {
+    font-family: var(--mono); font-size: 11px; color: var(--ink-soft);
+    letter-spacing: 0.1em; padding: 30px 0; text-align: center;
   }
-  .card-enter {
-    animation: rise .7s ease both;
-  }
-  .card-enter:nth-child(1) { animation-delay: .05s; }
-  .card-enter:nth-child(2) { animation-delay: .15s; }
-  .card-enter:nth-child(3) { animation-delay: .25s; }
-  .card-enter:nth-child(4) { animation-delay: .35s; }
-  @keyframes rise {
-    from { opacity: 0; transform: translateY(12px); }
-    to   { opacity: 1; transform: translateY(0); }
+  .err { color: var(--warn); }
+
+  /* footer */
+  footer {
+    margin-top: 30px;
+    text-align: center;
+    font-family: var(--mono); font-size: 10px;
+    letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--ink-soft);
   }
 
-  /* Brief fade for language/mode switching — does not affect resting state */
-  .lang-fade { animation: langFade .45s ease both; }
-  @keyframes langFade {
-    from { opacity: 0; transform: translateY(4px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
+  /* fade animation on language/mode switch */
+  @keyframes cardFade { from { opacity: .3; } to { opacity: 1; } }
+  .card.fade { animation: cardFade .4s ease; }
 </style>
 </head>
 <body>
+<main>
 
-<div class="top-controls">
-  <div class="toggle-pill kid" role="group" aria-label="Mode">
-    <button id="btn-adult" class="active" onclick="setMode('adult')">👤 ADULT</button>
-    <button id="btn-kid" onclick="setMode('kid')">👶 KID</button>
-  </div>
-  <div class="toggle-pill" role="group" aria-label="Language">
-    <button id="btn-en" class="active" onclick="setLang('en')">EN</button>
-    <button id="btn-bg" onclick="setLang('bg')">БГ</button>
-  </div>
-</div>
-
-<div class="wrap">
-
-  <div class="masthead">
-    <div class="left" id="m-left">—</div>
-    <h1 class="title" id="m-title">—</h1>
-    <div class="right">
-      <span class="live-dot"></span><span id="m-live">—</span><br>
-      <span id="masthead-date">—</span>
+  <header class="masthead">
+    <div class="masthead-left">
+      <h1><em data-i18n="title">Weather Bulletin</em><span class="v">v2.4</span></h1>
+      <div class="tag">
+        <span class="live-dot"></span>
+        <span data-i18n="tagline">live · amsterdam · sofia · ruse · shenzhen · auto-refresh 10 min</span>
+      </div>
+      <div class="today-date" id="today-date">
+        <span class="today-label" data-i18n="today-label">Today</span>
+        <span class="today-value" id="today-value">—</span>
+      </div>
     </div>
-  </div>
-
-  <div class="strap">
-    <span id="s-cities">—</span>
-    <span class="dots">· · · · · · · · · · · · · · · · · · · · ·</span>
-    <span id="s-units">—</span>
-  </div>
-
-  <div class="grid" id="grid">
-
-    <article class="card card-enter amsterdam loading" data-city="amsterdam">
-      <div class="city-head">
-        <span class="city-num" data-num="01">No. 01</span>
-        <span class="city-clock" id="clock-amsterdam">--:--</span>
+    <div class="toggles">
+      <div class="toggle-group" id="lang-toggle">
+        <button data-lang="en" class="active">EN</button>
+        <button data-lang="bg">БГ</button>
       </div>
-      <h2 class="city-name" data-city-name>Amsterdam</h2>
-      <p class="city-country" data-city-country>the Netherlands</p>
-
-      <div class="temp-block">
-        <div>
-          <div class="temp"><span class="t-now">--</span><span class="deg">°C</span></div>
-          <div class="feel"><span data-feel-label>Feels like</span> <span class="t-feel">--</span>°C</div>
-        </div>
-        <svg class="icon-art" viewBox="0 0 100 100" id="icon-amsterdam"></svg>
+      <div class="toggle-group kid-group" id="mode-toggle">
+        <button data-mode="adult" class="active" data-i18n="mode-adult">ADULT</button>
+        <button data-mode="kid" data-i18n="mode-kid">👶 KID</button>
       </div>
-      <p class="condition" id="cond-amsterdam">—</p>
+    </div>
+  </header>
 
-      <div class="stats">
-        <div class="stat"><span class="lbl" data-lbl="wind">Wind</span><span class="val s-wind">--<small>km/h</small></span></div>
-        <div class="stat"><span class="lbl" data-lbl="hum">Humidity</span><span class="val s-hum">--<small>%</small></span></div>
-        <div class="stat"><span class="lbl" data-lbl="rain">Rain</span><span class="val s-rain">--<small>%</small></span></div>
-      </div>
+  <section class="grid" id="grid">
+    <article class="card" data-city="amsterdam"><div class="city-band"></div><div class="loading">loading…</div></article>
+    <article class="card" data-city="sofia"><div class="city-band"></div><div class="loading">loading…</div></article>
+    <article class="card" data-city="ruse"><div class="city-band"></div><div class="loading">loading…</div></article>
+    <article class="card" data-city="shenzhen"><div class="city-band"></div><div class="loading">loading…</div></article>
+  </section>
 
-      <div class="section-h" data-h="hourly">Next 12 Hours</div>
-      <div class="hourly" id="hr-amsterdam"></div>
-
-      <div class="section-h" data-h="daily">5-Day Forecast</div>
-      <div class="forecast" id="fc-amsterdam"></div>
-
-      <div class="clothing" id="clothing-amsterdam">
-        <div class="clothing-h">
-          <span data-clothing-h>Today's Wardrobe</span>
-          <span class="season-badge" id="season-amsterdam">—</span>
-        </div>
-        <div class="outfit-title" id="outfit-title-amsterdam">—</div>
-        <ul class="outfit-list" id="outfit-list-amsterdam"></ul>
-        <div class="tip" id="tip-amsterdam"></div>
-      </div>
-    </article>
-
-    <article class="card card-enter sofia loading" data-city="sofia">
-      <div class="city-head">
-        <span class="city-num" data-num="02">No. 02</span>
-        <span class="city-clock" id="clock-sofia">--:--</span>
-      </div>
-      <h2 class="city-name" data-city-name>Sofia</h2>
-      <p class="city-country" data-city-country>Bulgaria</p>
-
-      <div class="temp-block">
-        <div>
-          <div class="temp"><span class="t-now">--</span><span class="deg">°C</span></div>
-          <div class="feel"><span data-feel-label>Feels like</span> <span class="t-feel">--</span>°C</div>
-        </div>
-        <svg class="icon-art" viewBox="0 0 100 100" id="icon-sofia"></svg>
-      </div>
-      <p class="condition" id="cond-sofia">—</p>
-
-      <div class="stats">
-        <div class="stat"><span class="lbl" data-lbl="wind">Wind</span><span class="val s-wind">--<small>km/h</small></span></div>
-        <div class="stat"><span class="lbl" data-lbl="hum">Humidity</span><span class="val s-hum">--<small>%</small></span></div>
-        <div class="stat"><span class="lbl" data-lbl="rain">Rain</span><span class="val s-rain">--<small>%</small></span></div>
-      </div>
-
-      <div class="section-h" data-h="hourly">Next 12 Hours</div>
-      <div class="hourly" id="hr-sofia"></div>
-
-      <div class="section-h" data-h="daily">5-Day Forecast</div>
-      <div class="forecast" id="fc-sofia"></div>
-
-      <div class="clothing" id="clothing-sofia">
-        <div class="clothing-h">
-          <span data-clothing-h>Today's Wardrobe</span>
-          <span class="season-badge" id="season-sofia">—</span>
-        </div>
-        <div class="outfit-title" id="outfit-title-sofia">—</div>
-        <ul class="outfit-list" id="outfit-list-sofia"></ul>
-        <div class="tip" id="tip-sofia"></div>
-      </div>
-    </article>
-
-    <article class="card card-enter shenzhen loading" data-city="shenzhen">
-      <div class="city-head">
-        <span class="city-num" data-num="03">No. 03</span>
-        <span class="city-clock" id="clock-shenzhen">--:--</span>
-      </div>
-      <h2 class="city-name" data-city-name>Shenzhen</h2>
-      <p class="city-country" data-city-country>China</p>
-
-      <div class="temp-block">
-        <div>
-          <div class="temp"><span class="t-now">--</span><span class="deg">°C</span></div>
-          <div class="feel"><span data-feel-label>Feels like</span> <span class="t-feel">--</span>°C</div>
-        </div>
-        <svg class="icon-art" viewBox="0 0 100 100" id="icon-shenzhen"></svg>
-      </div>
-      <p class="condition" id="cond-shenzhen">—</p>
-
-      <div class="stats">
-        <div class="stat"><span class="lbl" data-lbl="wind">Wind</span><span class="val s-wind">--<small>km/h</small></span></div>
-        <div class="stat"><span class="lbl" data-lbl="hum">Humidity</span><span class="val s-hum">--<small>%</small></span></div>
-        <div class="stat"><span class="lbl" data-lbl="rain">Rain</span><span class="val s-rain">--<small>%</small></span></div>
-      </div>
-
-      <div class="section-h" data-h="hourly">Next 12 Hours</div>
-      <div class="hourly" id="hr-shenzhen"></div>
-
-      <div class="section-h" data-h="daily">5-Day Forecast</div>
-      <div class="forecast" id="fc-shenzhen"></div>
-
-      <div class="clothing" id="clothing-shenzhen">
-        <div class="clothing-h">
-          <span data-clothing-h>Today's Wardrobe</span>
-          <span class="season-badge" id="season-shenzhen">—</span>
-        </div>
-        <div class="outfit-title" id="outfit-title-shenzhen">—</div>
-        <ul class="outfit-list" id="outfit-list-shenzhen"></ul>
-        <div class="tip" id="tip-shenzhen"></div>
-      </div>
-    </article>
-
-    <article class="card card-enter ruse loading" data-city="ruse">
-      <div class="city-head">
-        <span class="city-num" data-num="04">No. 04</span>
-        <span class="city-clock" id="clock-ruse">--:--</span>
-      </div>
-      <h2 class="city-name" data-city-name>Ruse</h2>
-      <p class="city-country" data-city-country>Bulgaria</p>
-
-      <div class="temp-block">
-        <div>
-          <div class="temp"><span class="t-now">--</span><span class="deg">°C</span></div>
-          <div class="feel"><span data-feel-label>Feels like</span> <span class="t-feel">--</span>°C</div>
-        </div>
-        <svg class="icon-art" viewBox="0 0 100 100" id="icon-ruse"></svg>
-      </div>
-      <p class="condition" id="cond-ruse">—</p>
-
-      <div class="stats">
-        <div class="stat"><span class="lbl" data-lbl="wind">Wind</span><span class="val s-wind">--<small>km/h</small></span></div>
-        <div class="stat"><span class="lbl" data-lbl="hum">Humidity</span><span class="val s-hum">--<small>%</small></span></div>
-        <div class="stat"><span class="lbl" data-lbl="rain">Rain</span><span class="val s-rain">--<small>%</small></span></div>
-      </div>
-
-      <div class="section-h" data-h="hourly">Next 12 Hours</div>
-      <div class="hourly" id="hr-ruse"></div>
-
-      <div class="section-h" data-h="daily">5-Day Forecast</div>
-      <div class="forecast" id="fc-ruse"></div>
-
-      <div class="clothing" id="clothing-ruse">
-        <div class="clothing-h">
-          <span data-clothing-h>Today's Wardrobe</span>
-          <span class="season-badge" id="season-ruse">—</span>
-        </div>
-        <div class="outfit-title" id="outfit-title-ruse">—</div>
-        <ul class="outfit-list" id="outfit-list-ruse"></ul>
-        <div class="tip" id="tip-ruse"></div>
-      </div>
-    </article>
-
-  </div>
-
-  <div class="foot">
-    <span id="f-data">Data — <a href="https://open-meteo.com" target="_blank">open-meteo.com</a></span>
-    <span id="last-update">—</span>
-    <span id="f-credit">© Atmospheric Bulletin</span>
-  </div>
-
-</div>
+  <footer>
+    <span data-i18n="footer">data · open-meteo · weather bulletin v2.3</span>
+  </footer>
+</main>
 
 <script>
-/* ============================================================
-   TRI-CITY WEATHER · BILINGUAL · ADULT/KID · ANIMATED
-   ============================================================ */
+/* =================================================================
+   v2.0 — Improved kid-mode dressing visualization
+   ================================================================= */
 
 const CITIES = [
-  { id: 'amsterdam', lat: 52.3676, lon: 4.9041, tz: 'Europe/Amsterdam', hemisphere: 'north' },
-  { id: 'sofia',     lat: 42.6977, lon: 23.3219, tz: 'Europe/Sofia', hemisphere: 'north' },
-  { id: 'shenzhen',  lat: 22.5431, lon: 114.0579, tz: 'Asia/Shanghai', hemisphere: 'north_subtropical' },
-  { id: 'ruse',      lat: 43.8564, lon: 25.9656, tz: 'Europe/Sofia', hemisphere: 'north' }
+  { id: 'amsterdam', name: 'Amsterdam', name_bg: 'Амстердам', country: 'NL', lat: 52.3676, lon: 4.9041,   climate: 'temperate',    tz: 'Europe/Amsterdam' },
+  { id: 'sofia',     name: 'Sofia',     name_bg: 'София',     country: 'BG', lat: 42.6977, lon: 23.3219,  climate: 'continental',  tz: 'Europe/Sofia' },
+  { id: 'ruse',      name: 'Ruse',      name_bg: 'Русе',      country: 'BG', lat: 43.8564, lon: 25.9706,  climate: 'continental',  tz: 'Europe/Sofia' },
+  { id: 'shenzhen',  name: 'Shenzhen',  name_bg: 'Шънджън',  country: 'CN', lat: 22.5431, lon: 114.0579, climate: 'subtropical',  tz: 'Asia/Shanghai' }
 ];
 
-/* ============================================================
+let currentLang = localStorage.getItem('weather-lang') || 'en';
+let currentMode = localStorage.getItem('weather-mode') || 'adult';
+let lastData = {};
+
+/* =================================================================
    I18N
-   ============================================================ */
+   ================================================================= */
 const I18N = {
   en: {
-    htmlLang: 'en', locale: 'en-GB',
-    masthead: { left: 'Vol. I &nbsp;·&nbsp; No. 03<br>Atmospheric Bulletin', title: 'The <b>Four-City</b> <i>Weather</i>', live: 'Live · Updates 10 min' },
-    strapCities: 'Amsterdam · Sofia · Shenzhen · Ruse',
-    strapUnits: 'Temperature in °Celsius',
-    feelLabel: 'Feels like',
-    labels: { wind: 'Wind', hum: 'Humidity', rain: 'Rain' },
-    sections: { hourly: 'Next 12 Hours', daily: '5-Day Forecast' },
-    clothingH: { adult: "Today's Wardrobe", kid: "Today's Kid Outfit" },
-    stylistNote: { adult: "Stylist's note —", kid: "Parent's tip —" },
-    todayLabel: 'Today',
-    days: ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],
-    seasons: { spring: 'SPRING', summer: 'SUMMER', autumn: 'AUTUMN', winter: 'WINTER' },
-    dataLabel: 'Data — ',
-    credit: '© Atmospheric Bulletin',
-    lastUpdate: 'Last updated:',
-    cities: {
-      amsterdam: { name: 'Amsterdam', country: 'the Netherlands' },
-      sofia:     { name: 'Sofia',     country: 'Bulgaria' },
-      shenzhen:  { name: 'Shenzhen',  country: 'China' },
-      ruse:      { name: 'Ruse',      country: 'Bulgaria' }
-    },
-    no: 'No.',
-    now: 'NOW'
+    title: 'Weather Bulletin',
+    'today-label': 'TODAY',
+    tagline: 'live · amsterdam · sofia · ruse · shenzhen · auto-refresh 10 min',
+    'mode-adult': 'ADULT', 'mode-kid': '👶 KID',
+    footer: 'data · open-meteo · weather bulletin v2.4',
+    feels: 'feels like', wind: 'wind', humid: 'humidity', rain: 'rain',
+    today: "Today's Outfit", todayKid: "Today's Kid Outfit",
+    parentAdvice: '👨‍👩‍👧 Parent Preview · Next 5 Days',
+    tip: 'Stylist note', tipKid: 'Parent tip',
+    fiveDay: '5-day forecast',
+    spring: 'SPRING', summer: 'SUMMER', autumn: 'AUTUMN', winter: 'WINTER',
+    days: ['MON','TUE','WED','THU','FRI','SAT','SUN'],
+    weekdays: ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'],
+    monthsShort: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
+    mph: 'km/h',
+    conditions: {
+      0: 'Clear sky', 1: 'Mainly clear', 2: 'Partly cloudy', 3: 'Overcast',
+      45: 'Foggy', 48: 'Rime fog', 51: 'Light drizzle', 53: 'Drizzle',
+      55: 'Heavy drizzle', 61: 'Light rain', 63: 'Rain', 65: 'Heavy rain',
+      71: 'Light snow', 73: 'Snow', 75: 'Heavy snow', 77: 'Snow grains',
+      80: 'Light showers', 81: 'Showers', 82: 'Heavy showers',
+      85: 'Snow showers', 86: 'Heavy snow showers',
+      95: 'Thunderstorm', 96: 'Thunder w/ hail', 99: 'Severe thunder'
+    }
   },
   bg: {
-    htmlLang: 'bg', locale: 'bg-BG',
-    masthead: { left: 'Том I &nbsp;·&nbsp; № 03<br>Атмосферен бюлетин', title: 'Времето в <b>четирите града</b>', live: 'На живо · Обновява се на 10 мин' },
-    strapCities: 'Амстердам · София · Шенжен · Русе',
-    strapUnits: 'Температура в °Целзий',
-    feelLabel: 'Усеща се като',
-    labels: { wind: 'Вятър', hum: 'Влажност', rain: 'Дъжд' },
-    sections: { hourly: 'Следващите 12 часа', daily: 'Прогноза за 5 дни' },
-    clothingH: { adult: 'Днешният гардероб', kid: 'Облекло за детето днес' },
-    stylistNote: { adult: 'Бележка на стилиста —', kid: 'Съвет за родителя —' },
-    todayLabel: 'Днес',
-    days: ['Нед','Пон','Вт','Ср','Чт','Пт','Сб'],
-    seasons: { spring: 'ПРОЛЕТ', summer: 'ЛЯТО', autumn: 'ЕСЕН', winter: 'ЗИМА' },
-    dataLabel: 'Източник — ',
-    credit: '© Атмосферен бюлетин',
-    lastUpdate: 'Последно обновяване:',
-    cities: {
-      amsterdam: { name: 'Амстердам', country: 'Нидерландия' },
-      sofia:     { name: 'София',     country: 'България' },
-      shenzhen:  { name: 'Шенжен',    country: 'Китай' },
-      ruse:      { name: 'Русе',      country: 'България' }
-    },
-    no: '№',
-    now: 'СЕГА'
+    title: 'Облекло според Времето',
+    'today-label': 'ДНЕС',
+    tagline: 'на живо · амстердам · софия · русе · шънджън · обновяване на 10 мин',
+    'mode-adult': 'ВЪЗРАСТЕН', 'mode-kid': '👶 ДЕТЕ',
+    footer: 'данни · open-meteo · облекло според времето v2.4',
+    feels: 'усеща се', wind: 'вятър', humid: 'влажност', rain: 'дъжд',
+    today: 'Облекло за днес', todayKid: 'Облекло за детето днес',
+    parentAdvice: '👨‍👩‍👧 За родителя · Следващи 5 дни',
+    tip: 'Бележка от стилиста', tipKid: 'Съвет за родителя',
+    fiveDay: 'Прогноза 5 дни',
+    spring: 'ПРОЛЕТ', summer: 'ЛЯТО', autumn: 'ЕСЕН', winter: 'ЗИМА',
+    days: ['ПОН','ВТО','СРЯ','ЧЕТ','ПЕТ','СЪБ','НЕД'],
+    weekdays: ['Неделя','Понеделник','Вторник','Сряда','Четвъртък','Петък','Събота'],
+    monthsShort: ['Ян','Фев','Март','Апр','Май','Юни','Юли','Авг','Сеп','Окт','Ное','Дек'],
+    mph: 'км/ч',
+    conditions: {
+      0: 'Ясно небе', 1: 'Предимно ясно', 2: 'Променлива облачност', 3: 'Облачно',
+      45: 'Мъгла', 48: 'Скреж', 51: 'Леко ръмене', 53: 'Ръмене',
+      55: 'Силно ръмене', 61: 'Лек дъжд', 63: 'Дъжд', 65: 'Силен дъжд',
+      71: 'Лек снеговалеж', 73: 'Снеговалеж', 75: 'Силен снеговалеж', 77: 'Снежинки',
+      80: 'Леки превалявания', 81: 'Превалявания', 82: 'Силни превалявания',
+      85: 'Снежни превалявания', 86: 'Силни снежни превалявания',
+      95: 'Гръмотевична буря', 96: 'Буря с градушка', 99: 'Силна буря'
+    }
   }
 };
 
-const WMO = {
-  0:  { en: 'Clear sky',              bg: 'Ясно небе',                  icon: 'sun' },
-  1:  { en: 'Mainly clear',           bg: 'Предимно ясно',              icon: 'sun' },
-  2:  { en: 'Partly cloudy',          bg: 'Частична облачност',         icon: 'partly' },
-  3:  { en: 'Overcast',               bg: 'Плътна облачност',           icon: 'cloud' },
-  45: { en: 'Foggy',                  bg: 'Мъгливо',                    icon: 'fog' },
-  48: { en: 'Rime fog',               bg: 'Мразовита мъгла',            icon: 'fog' },
-  51: { en: 'Light drizzle',          bg: 'Лек ръмеж',                  icon: 'rain' },
-  53: { en: 'Drizzle',                bg: 'Ръмеж',                      icon: 'rain' },
-  55: { en: 'Heavy drizzle',          bg: 'Силен ръмеж',                icon: 'rain' },
-  56: { en: 'Freezing drizzle',       bg: 'Заскрежен ръмеж',            icon: 'rain' },
-  57: { en: 'Heavy freezing drizzle', bg: 'Силен заскрежен ръмеж',      icon: 'rain' },
-  61: { en: 'Light rain',             bg: 'Слаб дъжд',                  icon: 'rain' },
-  63: { en: 'Rain',                   bg: 'Дъжд',                       icon: 'rain' },
-  65: { en: 'Heavy rain',             bg: 'Силен дъжд',                 icon: 'rain' },
-  66: { en: 'Freezing rain',          bg: 'Леден дъжд',                 icon: 'rain' },
-  67: { en: 'Heavy freezing rain',    bg: 'Силен леден дъжд',           icon: 'rain' },
-  71: { en: 'Light snow',             bg: 'Слаб сняг',                  icon: 'snow' },
-  73: { en: 'Snow',                   bg: 'Сняг',                       icon: 'snow' },
-  75: { en: 'Heavy snow',             bg: 'Силен снеговалеж',           icon: 'snow' },
-  77: { en: 'Snow grains',            bg: 'Снежни зърна',               icon: 'snow' },
-  80: { en: 'Rain showers',           bg: 'Дъждовни превалявания',      icon: 'rain' },
-  81: { en: 'Heavy showers',          bg: 'Силни превалявания',         icon: 'rain' },
-  82: { en: 'Violent showers',        bg: 'Поройни превалявания',       icon: 'rain' },
-  85: { en: 'Snow showers',           bg: 'Снежни превалявания',        icon: 'snow' },
-  86: { en: 'Heavy snow showers',     bg: 'Силни снежни превалявания',  icon: 'snow' },
-  95: { en: 'Thunderstorm',           bg: 'Гръмотевична буря',          icon: 'storm' },
-  96: { en: 'Thunderstorm w/ hail',   bg: 'Буря с градушка',            icon: 'storm' },
-  99: { en: 'Severe thunderstorm',    bg: 'Силна гръмотевична буря',    icon: 'storm' }
-};
-
-/* ============================================================
-   ANIMATED SVG ICONS
-   ============================================================ */
-const ICONS = {
-  sun: `
-    <g class="anim-sun-rays" stroke="#c8553d" stroke-width="2.4" stroke-linecap="round" fill="none">
-      <line x1="50" y1="14" x2="50" y2="24"/>
-      <line x1="50" y1="76" x2="50" y2="86"/>
-      <line x1="14" y1="50" x2="24" y2="50"/>
-      <line x1="76" y1="50" x2="86" y2="50"/>
-      <line x1="24" y1="24" x2="31" y2="31"/>
-      <line x1="69" y1="69" x2="76" y2="76"/>
-      <line x1="76" y1="24" x2="69" y2="31"/>
-      <line x1="31" y1="69" x2="24" y2="76"/>
-    </g>
-    <g class="anim-sun-core">
-      <circle cx="50" cy="50" r="17" fill="#d4a24c" stroke="#c8553d" stroke-width="2.4"/>
-    </g>`,
-  partly: `
-    <g class="anim-sun-rays" stroke="#c8553d" stroke-width="2" stroke-linecap="round" fill="none" style="transform-origin:38px 38px">
-      <line x1="38" y1="14" x2="38" y2="22"/>
-      <line x1="14" y1="38" x2="22" y2="38"/>
-      <line x1="20" y1="20" x2="26" y2="26"/>
-      <line x1="56" y1="20" x2="50" y2="26"/>
-    </g>
-    <circle cx="38" cy="38" r="13" fill="#d4a24c" stroke="#c8553d" stroke-width="2.2"/>
-    <g class="anim-cloud">
-      <path d="M 35 65 Q 28 65 28 58 Q 28 50 38 50 Q 42 42 52 44 Q 62 44 64 54 Q 74 54 74 64 Q 74 72 66 72 L 35 72 Q 28 72 28 65 Z"
-            fill="#f5f1ea" stroke="#2a2f37" stroke-width="2.2" stroke-linejoin="round"/>
-    </g>`,
-  cloud: `
-    <g class="anim-cloud">
-      <path d="M 30 60 Q 22 60 22 52 Q 22 42 34 42 Q 38 32 50 32 Q 64 32 66 46 Q 78 46 78 58 Q 78 68 68 68 L 30 68 Q 22 68 22 60 Z"
-            fill="#ede6d8" stroke="#2a2f37" stroke-width="2.2" stroke-linejoin="round"/>
-    </g>`,
-  rain: `
-    <g class="anim-cloud">
-      <path d="M 30 50 Q 22 50 22 42 Q 22 32 34 32 Q 38 22 50 22 Q 64 22 66 36 Q 78 36 78 48 Q 78 58 68 58 L 30 58 Q 22 58 22 50 Z"
-            fill="#dfe8e3" stroke="#2a2f37" stroke-width="2.2" stroke-linejoin="round"/>
-    </g>
-    <g stroke="#588b8b" stroke-width="2.4" stroke-linecap="round">
-      <line class="anim-raindrop" x1="34" y1="62" x2="32" y2="74"/>
-      <line class="anim-raindrop" x1="46" y1="62" x2="44" y2="74"/>
-      <line class="anim-raindrop" x1="58" y1="62" x2="56" y2="74"/>
-      <line class="anim-raindrop" x1="68" y1="62" x2="66" y2="74"/>
-    </g>`,
-  snow: `
-    <g class="anim-cloud">
-      <path d="M 30 50 Q 22 50 22 42 Q 22 32 34 32 Q 38 22 50 22 Q 64 22 66 36 Q 78 36 78 48 Q 78 58 68 58 L 30 58 Q 22 58 22 50 Z"
-            fill="#ede6d8" stroke="#2a2f37" stroke-width="2.2" stroke-linejoin="round"/>
-    </g>
-    <g stroke="#2a2f37" stroke-width="1.8" stroke-linecap="round" fill="none">
-      <g class="anim-snow" style="transform-origin:35px 70px">
-        <line x1="35" y1="65" x2="35" y2="75"/>
-        <line x1="30" y1="70" x2="40" y2="70"/>
-      </g>
-      <g class="anim-snow" style="transform-origin:50px 74px">
-        <line x1="50" y1="69" x2="50" y2="79"/>
-        <line x1="45" y1="74" x2="55" y2="74"/>
-      </g>
-      <g class="anim-snow" style="transform-origin:65px 70px">
-        <line x1="65" y1="65" x2="65" y2="75"/>
-        <line x1="60" y1="70" x2="70" y2="70"/>
-      </g>
-    </g>`,
-  fog: `
-    <g class="anim-fog" stroke="#6b6862" stroke-width="2.6" stroke-linecap="round" fill="none">
-      <line x1="20" y1="32" x2="80" y2="32"/>
-      <line x1="14" y1="46" x2="76" y2="46"/>
-      <line x1="26" y1="60" x2="86" y2="60"/>
-      <line x1="20" y1="74" x2="70" y2="74"/>
-    </g>`,
-  storm: `
-    <g class="anim-cloud">
-      <path d="M 30 48 Q 22 48 22 40 Q 22 30 34 30 Q 38 20 50 20 Q 64 20 66 34 Q 78 34 78 46 Q 78 56 68 56 L 30 56 Q 22 56 22 48 Z"
-            fill="#6b6862" stroke="#2a2f37" stroke-width="2.2" stroke-linejoin="round"/>
-    </g>
-    <g class="anim-bolt">
-      <polygon points="50,56 40,76 50,76 44,90 64,68 52,68 58,56" fill="#d4a24c" stroke="#c8553d" stroke-width="2"/>
-    </g>`
-};
-
-const TINY_ICON = { sun:'☀', partly:'⛅', cloud:'☁', rain:'🌧', snow:'❄', fog:'🌫', storm:'⛈' };
-
-/* ============================================================
-   SEASON DETECTION (meteorological)
-   ============================================================ */
-function getSeason(month, hemisphere) {
-  /* month: 0-11 (JS) — using meteorological seasons */
-  if (hemisphere === 'north_subtropical') {
-    /* Shenzhen: short spring (Mar), long hot wet summer (Apr-Sep),
-       short autumn (Oct-Nov), mild dry winter (Dec-Feb) */
-    if (month === 2) return 'spring';
-    if (month >= 3 && month <= 8) return 'summer';
-    if (month >= 9 && month <= 10) return 'autumn';
-    return 'winter';
+/* =================================================================
+   SEASON DETECTION
+   ================================================================= */
+function getSeason(climate) {
+  const m = new Date().getMonth(); // 0..11
+  if (climate === 'subtropical') {
+    if (m >= 11 || m <= 1) return 'winter';   // Dec–Feb mild
+    if (m >= 2 && m <= 4) return 'spring';
+    if (m >= 5 && m <= 8) return 'summer';    // May–Sep hot
+    return 'autumn';                           // Oct–Nov
   }
-  /* Northern hemisphere — meteorological seasons */
-  if (month >= 2 && month <= 4) return 'spring';
-  if (month >= 5 && month <= 7) return 'summer';
-  if (month >= 8 && month <= 10) return 'autumn';
+  // temperate / continental (Northern hemisphere)
+  if (m >= 2 && m <= 4) return 'spring';
+  if (m >= 5 && m <= 7) return 'summer';
+  if (m >= 8 && m <= 10) return 'autumn';
   return 'winter';
 }
 
-/* ============================================================
-   ADULT CLOTHING (6 temperature bands)
-   ============================================================ */
-const OUTFITS_ADULT = {
-  arctic: {
-    en: { title: "Bundle up — it's freezing out there.",
-          items: ['Heavy insulated parka or down coat','Thermal base layer (merino or fleece)','Wool sweater on top','Lined trousers or thermal leggings','Insulated waterproof boots','Wool scarf, beanie, and gloves'],
-          tip:   'Cover exposed skin — frostbite risk rises sharply below zero.' },
-    bg: { title: 'Облечете се топло — навън е под нулата.',
-          items: ['Дебело пухено яке или зимен парк','Термо бельо (мерино или поларено)','Вълнен пуловер върху термото','Подплатен панталон или термо клин','Топли водоустойчиви боти','Вълнен шал, шапка и ръкавици'],
-          tip:   'Покрийте откритата кожа — рискът от измръзване нараства рязко под нулата.' }
-  },
-  cold: {
-    en: { title: 'A proper winter coat day.',
-          items: ['Wool overcoat or padded jacket','Long-sleeve shirt with a fine-knit jumper','Dark jeans or wool trousers','Closed leather boots or chunky sneakers','Light scarf, gloves optional'],
-          tip:   'Layer thoughtfully — you can shed a piece indoors without losing warmth.' },
-    bg: { title: 'Ден за истинско зимно палто.',
-          items: ['Вълнено палто или подплатено яке','Риза с дълъг ръкав и тънък пуловер','Тъмни дънки или вълнен панталон','Затворени кожени боти или масивни маратонки','Лек шал; ръкавици по желание'],
-          tip:   'Облечете се на пластове — на закрито можете да свалите едно нещо, без да премръзнете.' }
-  },
-  cool: {
-    en: { title: 'Crisp & layered — classic transitional weather.',
-          items: ['Trench coat, leather jacket, or denim jacket','Long-sleeve shirt or light knit','Chinos or dark jeans','Loafers, boots, or clean sneakers','A scarf adds polish and warmth'],
-          tip:   'Mornings will bite — bring a layer you can tie around your waist by midday.' },
-    bg: { title: 'Свежо и на пластове — класическо преходно време.',
-          items: ['Шлифер, кожено или дънково яке','Риза с дълъг ръкав или тънка плетена блуза','Чино панталон или тъмни дънки','Мокасини, боти или чисти маратонки','Шал придава завършеност и топлина'],
-          tip:   'Сутрините ще са хладни — носете слой, който можете да вържете на кръста към обяд.' }
-  },
-  mild: {
-    en: { title: 'A perfect dress-anything day.',
-          items: ['Light cardigan, blazer, or overshirt','T-shirt, blouse, or short-sleeve button-up','Chinos, jeans, midi dress, or skirt','Sneakers, loafers, or sandals','Sunglasses recommended'],
-          tip:   'Ideal weather for layering — a light jacket handles any surprise breeze.' },
-    bg: { title: 'Идеален ден да облечете каквото пожелаете.',
-          items: ['Лека жилетка, сако или риза-яке','Тениска, блуза или риза с къс ръкав','Чино, дънки, миди рокля или пола','Маратонки, мокасини или сандали','Препоръчват се слънчеви очила'],
-          tip:   'Идеално време за пластове — леко яке се справя с внезапен вятър.' }
-  },
-  warm: {
-    en: { title: 'Lean breezy and breathable.',
-          items: ['Linen shirt, T-shirt, or sleeveless top','Cotton shorts, light trousers, or summer dress','Canvas sneakers, espadrilles, or sandals','Sunglasses & a wide-brim hat','Sunscreen — at least SPF 30'],
-          tip:   'Choose natural fibres — linen and cotton breathe far better than synthetics.' },
-    bg: { title: 'Заложете на леки и дишащи материи.',
-          items: ['Ленена риза, тениска или потник','Памучни шорти, лек панталон или лятна рокля','Платнени маратонки, еспадрили или сандали','Слънчеви очила и шапка с широка периферия','Слънцезащитен крем — поне SPF 30'],
-          tip:   'Изберете естествени материи — ленът и памукът дишат много по-добре от синтетиката.' }
-  },
-  hot: {
-    en: { title: 'Hot — keep it minimal & sun-smart.',
-          items: ['Loose linen or cotton — light colours only','Shorts, breezy skirt, or airy dress','Open sandals or ventilated sneakers','Wide-brim hat & UV sunglasses','SPF 50, reapply every 2 hours','Carry a refillable water bottle'],
-          tip:   'Avoid direct sun between 11:00 and 15:00. Stay hydrated.' },
-    bg: { title: 'Горещо — минимализъм и защита от слънцето.',
-          items: ['Свободен лен или памук — само светли цветове','Шорти, ефирна пола или лека рокля','Отворени сандали или вентилирани маратонки','Шапка с широка периферия и UV очила','SPF 50, подновявайте на всеки 2 часа','Носете бутилка с вода за многократна употреба'],
-          tip:   'Избягвайте прякото слънце между 11:00 и 15:00 ч. Пийте достатъчно вода.' }
-  }
-};
+/* =================================================================
+   CLOTHING LOGIC — Adult (kept simple from v1) + Kid (expanded)
+   ================================================================= */
 
-/* ============================================================
-   KID CLOTHING — by season & temperature
-   Children feel cold faster and overheat faster than adults.
-   Each season has 3 temp bands: cold-end / typical / warm-end.
-   ============================================================ */
-const OUTFITS_KID = {
-  spring: {
-    cold: {
-      en: { title: 'A chilly spring morning — dress warmly.',
-            items: ['Padded spring jacket with hood','Long-sleeve cotton shirt + light sweater','Long trousers or lined leggings','Closed shoes or light boots','Thin beanie & light gloves for the morning','Spare socks in the bag'],
-            tip:   'Spring mornings can be 8–10°C colder than midday — pack a layer they can take off later.' },
-      bg: { title: 'Хладна пролетна сутрин — облечете го топло.',
-            items: ['Подплатено пролетно яке с качулка','Памучна риза с дълъг ръкав + лек пуловер','Дълъг панталон или подплатен клин','Затворени обувки или леки боти','Тънка шапка и леки ръкавици за сутринта','Резервни чорапи в чантата'],
-            tip:   'Пролетните сутрини могат да са с 8–10°C по-студени от обяд — носете слой, който детето да съблече по-късно.' }
-    },
-    mild: {
-      en: { title: 'Perfect spring day — layered & playful.',
-            items: ['Light windbreaker or denim jacket','Long-sleeve T-shirt or thin sweatshirt','Comfortable trousers or jeans','Sneakers (closed-toe)','Light cap for sun protection'],
-            tip:   "Spring weather flips fast — choose layers they can manage themselves." },
-      bg: { title: 'Перфектен пролетен ден — на пластове и удобно.',
-            items: ['Леко ветроустойчиво или дънково яке','Тениска с дълъг ръкав или тънък суитчър','Удобен панталон или дънки','Маратонки (затворени)','Лека шапка за защита от слънцето'],
-            tip:   'Пролетното време се мени бързо — изберете слоеве, които детето да управлява само.' }
-    },
-    warm: {
-      en: { title: 'Warm spring afternoon — light & breathable.',
-            items: ['Light long-sleeve T-shirt or short-sleeve','Cotton trousers, leggings, or play shorts','Light cardigan in the bag (for shade/wind)','Breathable sneakers or canvas shoes','Sun cap & SPF 30 cream'],
-            tip:   'Even on warm spring days, UV is rising — sun cream on cheeks, nose, and ears.' },
-      bg: { title: 'Топъл пролетен следобед — леко и дишащо.',
-            items: ['Лека тениска с дълъг или къс ръкав','Памучен панталон, клин или шорти за игра','Лека жилетка в чантата (за сянка/вятър)','Дишащи маратонки или платнени обувки','Шапка с козирка и SPF 30 крем'],
-            tip:   'Дори в топли пролетни дни UV-индексът расте — мажете бузките, носа и ушичките.' }
-    }
-  },
-  summer: {
-    cold: {
-      en: { title: 'A cooler summer day — light layers.',
-            items: ['Light long-sleeve T-shirt or thin sweatshirt','Cotton trousers or capri leggings','Closed sneakers','Sun hat (UV is still strong even when cooler)','Light jacket for evenings'],
-            tip:   "Don't skip sunscreen — UV doesn't care if it feels cool outside." },
-      bg: { title: 'По-хладен летен ден — леки пластове.',
-            items: ['Лека тениска с дълъг ръкав или тънък суитчър','Памучен панталон или дълъг клин','Затворени маратонки','Шапка за слънце (UV-индексът е силен и при по-хладно)','Леко яке за вечерта'],
-            tip:   'Не пропускайте слънцезащитата — UV не зависи от това дали навън е хладно.' }
-    },
-    mild: {
-      en: { title: 'Beautiful summer day — sun-smart play.',
-            items: ['Cotton T-shirt (light colours)','Shorts, summer skirt, or playsuit','Sandals with secure straps or canvas sneakers','Wide-brim sun hat — must cover the neck','SPF 50 sunscreen, reapplied every 2 hours','Refillable water bottle'],
-            tip:   "Children's skin burns 3× faster than adult skin — shade between 11:00 and 15:00." },
-      bg: { title: 'Красив летен ден — игра със защита от слънцето.',
-            items: ['Памучна тениска (светли цветове)','Шорти, лятна пола или гащеризон','Сандали с лепенки или платнени маратонки','Шапка с широка периферия — да покрива врата','SPF 50 крем, подновяван на всеки 2 часа','Бутилка за многократна употреба'],
-            tip:   'Детската кожа изгаря 3 пъти по-бързо от тази на възрастните — сянка между 11:00 и 15:00 ч.' }
-    },
-    warm: {
-      en: { title: 'Hot summer day — minimum clothes, maximum protection.',
-            items: ['Light loose T-shirt — long-sleeve UV shirt is ideal','Loose shorts in light cotton or linen','Open sandals or water shoes','Wide-brim hat with neck flap','SPF 50+, reapply every 90 minutes','Plenty of water — small frequent sips','Avoid asphalt; choose grass or shade'],
-            tip:   'Heat exhaustion in kids hits suddenly — watch for redness, irritability, or fatigue. Indoors during peak hours.' },
-      bg: { title: 'Горещ летен ден — минимум дрехи, максимум защита.',
-            items: ['Лека свободна тениска — UV блуза с дълъг ръкав е идеална','Свободни шорти от памук или лен','Отворени сандали или водни обувки','Шапка с широка периферия и платно за врата','SPF 50+, подновяван на всеки 90 минути','Много вода — често по малко','Избягвайте асфалта; играта на трева или сянка'],
-            tip:   'Топлинният удар при децата идва внезапно — следете за зачервяване, нервност или умора. На закрито в пиковите часове.' }
-    }
-  },
-  autumn: {
-    cold: {
-      en: { title: 'Crisp autumn morning — bundle up.',
-            items: ['Padded autumn jacket with hood','Long-sleeve shirt + warm sweater or fleece','Long trousers (jeans or thick cotton)','Waterproof boots (autumn = puddles)','Beanie & light gloves'],
-            tip:   "Layer with pieces they can take off — classrooms are warm, playgrounds aren't." },
-      bg: { title: 'Свежа есенна сутрин — облечете го топло.',
-            items: ['Подплатено есенно яке с качулка','Риза с дълъг ръкав + топъл пуловер или полар','Дълъг панталон (дънки или дебел памук)','Водоустойчиви боти (есента = локви)','Шапка и леки ръкавици'],
-            tip:   'Пластове, които детето може да съблече — класните стаи са топли, дворът не.' }
-    },
-    mild: {
-      en: { title: 'Classic autumn day — layered & cozy.',
-            items: ['Lightweight jacket or fleece','Long-sleeve T-shirt + thin hoodie','Long trousers','Closed sneakers or ankle boots','A small scarf for windy days'],
-            tip:   'Pack a hooded layer — autumn rain comes without warning.' },
-      bg: { title: 'Класически есенен ден — на пластове и уютно.',
-            items: ['Леко яке или полар','Тениска с дълъг ръкав + тънка блуза с качулка','Дълъг панталон','Затворени маратонки или леки боти','Малък шал за ветровит ден'],
-            tip:   'Носете дреха с качулка — есенният дъжд идва без предупреждение.' }
-    },
-    warm: {
-      en: { title: 'Mild autumn day — flexible & comfortable.',
-            items: ['Long-sleeve cotton T-shirt','Light sweatshirt tied around the waist','Long trousers or jeans','Sneakers','Light hat if sunny'],
-            tip:   'Mid-day can feel like summer; mornings and evenings will not — pack accordingly.' },
-      bg: { title: 'Топъл есенен ден — гъвкаво и удобно.',
-            items: ['Памучна тениска с дълъг ръкав','Лек суитчър, вързан на кръста','Дълъг панталон или дънки','Маратонки','Лека шапка, ако е слънчево'],
-            tip:   'Обядно може да е като лято; сутрин и вечер не — стягайте се съобразно.' }
-    }
-  },
-  winter: {
-    cold: {
-      en: { title: 'Freezing winter day — full bundle required.',
-            items: ['Heavy winter coat (down or insulated)','Thermal base layer top + bottom','Warm sweater on top of thermal','Lined winter trousers or snow pants','Waterproof insulated boots with grip','Wool hat covering the ears, scarf, mittens (warmer than gloves)','Thick warm socks'],
-            tip:   "Below zero, limit playground time to 20–30 minute sessions with warm-up breaks." },
-      bg: { title: 'Леденостуден зимен ден — пълно екипиране.',
-            items: ['Дебело зимно палто (пухено или подплатено)','Термо бельо — горнище и долнище','Топъл пуловер върху термото','Подплатен зимен панталон или ски панталон','Водоустойчиви топли боти с грайфер','Вълнена шапка, покриваща ушите, шал, ръкавици-чорапки (по-топли от обикновените)','Дебели топли чорапи'],
-            tip:   'Под нулата ограничете играта на двора до 20–30 мин със стопляне между сесиите.' }
-    },
-    mild: {
-      en: { title: 'Cold winter day — warm but mobile.',
-            items: ['Padded winter jacket','Long-sleeve thermal or warm cotton shirt','Sweater or fleece','Warm trousers or lined jeans','Closed warm boots','Hat & gloves'],
-            tip:   "Children warm up fast while playing — choose a jacket they can unzip without removing." },
-      bg: { title: 'Студен зимен ден — топло, но удобно.',
-            items: ['Подплатено зимно яке','Термо блуза или топла памучна риза с дълъг ръкав','Пуловер или полар','Топъл панталон или подплатени дънки','Затворени топли боти','Шапка и ръкавици'],
-            tip:   'Децата се сгряват бързо при игра — изберете яке, което може да се разкопчае, без да се сваля.' }
-    },
-    warm: {
-      en: { title: 'Mild winter day — coat still essential.',
-            items: ['Light winter jacket or thick fleece','Long-sleeve T-shirt + light sweater','Long trousers','Closed shoes or light boots','Hat optional, gloves in the bag'],
-            tip:   'Mild winter days are deceptive — wind chill can drop the real feel by 5–7°C.' },
-      bg: { title: 'Мек зимен ден — палтото все още е задължително.',
-            items: ['Леко зимно яке или дебел полар','Тениска с дълъг ръкав + лек пуловер','Дълъг панталон','Затворени обувки или леки боти','Шапка по желание, ръкавици в чантата'],
-            tip:   'Меките зимни дни лъжат — вятърът може да свали усещаната температура с 5–7°C.' }
-    }
-  }
-};
-
-const ADDONS = {
-  en: {
-    rain:    (chance) => `Rain expected (${chance}% chance).`,
-    rainItem: '🌂 Compact umbrella & water-resistant outer layer',
-    rainItemKid: '🌂 Rubber rain boots & waterproof trousers (kids will jump in puddles)',
-    snowItem: '❄ Waterproof boots with grip',
-    snowItemKid: '❄ Snow gloves (mittens) & waterproof snow pants',
-    windItem: '💨 A wind-cutting layer — avoid loose scarves',
-    windItemKid: '💨 Hood up & secured — loose hats fly off in playground wind'
-  },
-  bg: {
-    rain:    (chance) => `Очаква се дъжд (${chance}% вероятност).`,
-    rainItem: '🌂 Компактен чадър и водоустойчив горен слой',
-    rainItemKid: '🌂 Гумени ботуши и непромокаем панталон (децата ще скачат в локви)',
-    snowItem: '❄ Водоустойчиви боти с грайфер',
-    snowItemKid: '❄ Снежни ръкавици (чорапки) и водоустойчив ски панталон',
-    windItem: '💨 Ветроустойчив слой — избягвайте свободни шалове',
-    windItemKid: '💨 Качулката горе и стегната — свободните шапки литват в двора'
-  }
-};
-
-/* ============================================================
-   OUTFIT PICKER
-   ============================================================ */
-function getAdultBand(temp) {
-  if (temp <= 0) return 'arctic';
-  if (temp <= 8) return 'cold';
-  if (temp <= 15) return 'cool';
-  if (temp <= 22) return 'mild';
-  if (temp <= 28) return 'warm';
-  return 'hot';
-}
-
-/* For kids, "cold/mild/warm" thresholds shift up — kids feel cold sooner */
-function getKidBand(temp, season) {
-  if (season === 'winter') {
-    if (temp <= -2) return 'cold';
-    if (temp <= 6)  return 'mild';
-    return 'warm';
-  }
-  if (season === 'spring' || season === 'autumn') {
-    if (temp <= 8)  return 'cold';
-    if (temp <= 17) return 'mild';
-    return 'warm';
-  }
-  /* summer */
-  if (temp <= 20) return 'cold';
-  if (temp <= 27) return 'mild';
-  return 'warm';
-}
-
-function getOutfit(temp, code, rainChance, wind, lang, mode, season) {
-  const iconKey = WMO[code] ? WMO[code].icon : 'cloud';
-  const isWet = rainChance >= 40 || ['rain','storm'].includes(iconKey);
-  const isSnow = iconKey === 'snow';
-  const windy = wind >= 25;
-
-  let o;
-  if (mode === 'kid') {
-    const band = getKidBand(temp, season);
-    o = OUTFITS_KID[season][band][lang];
+// adult: simple temp bands
+function adultOutfit(temp, code, lang) {
+  const T = lang === 'bg';
+  let items = [];
+  if (temp >= 28) {
+    items = T ? ['Лека тениска','Къси панталони','Сандали','Слънчева шапка'] : ['Light t-shirt','Shorts','Sandals','Sun hat'];
+  } else if (temp >= 22) {
+    items = T ? ['Тениска','Леки панталони','Маратонки'] : ['T-shirt','Light trousers','Sneakers'];
+  } else if (temp >= 15) {
+    items = T ? ['Дълъг ръкав','Дънки','Лека жилетка','Затворени обувки'] : ['Long sleeve','Jeans','Light cardigan','Closed shoes'];
+  } else if (temp >= 8) {
+    items = T ? ['Пуловер','Дънки','Леко яке','Шал'] : ['Sweater','Jeans','Light jacket','Scarf'];
+  } else if (temp >= 0) {
+    items = T ? ['Топла блуза','Зимно яке','Зимна шапка','Шал','Ръкавици'] : ['Warm top','Winter coat','Hat','Scarf','Gloves'];
   } else {
-    const band = getAdultBand(temp);
-    o = OUTFITS_ADULT[band][lang];
+    items = T ? ['Термо бельо','Дебело яке','Зимна шапка','Дебели ръкавици','Зимни обувки'] : ['Thermal layer','Heavy coat','Winter hat','Thick gloves','Boots'];
   }
-
-  const items = [...o.items];
-  let tip = o.tip;
-  const a = ADDONS[lang];
-
-  if (isWet && !isSnow) {
-    items.push(mode === 'kid' ? a.rainItemKid : a.rainItem);
-    tip = `${a.rain(rainChance)} ${tip}`;
-  }
-  if (isSnow) items.push(mode === 'kid' ? a.snowItemKid : a.snowItem);
-  if (windy)  items.push(mode === 'kid' ? a.windItemKid : a.windItem);
-
-  return { title: o.title, items, tip };
+  // weather adders
+  if ([51,53,55,61,63,65,80,81,82].includes(code)) items.push(T ? 'Дъждобран' : 'Raincoat');
+  if ([71,73,75,77,85,86].includes(code)) items.push(T ? 'Зимни ботуши' : 'Snow boots');
+  if (code >= 95) items.push(T ? 'Стой на закрито при буря' : 'Stay indoors during storm');
+  return items;
 }
 
-/* ============================================================
-   STATE
-   ============================================================ */
-let currentLang = (localStorage.getItem('weather-lang') === 'bg') ? 'bg' : 'en';
-let currentMode = (localStorage.getItem('weather-mode') === 'kid') ? 'kid' : 'adult';
-let lastData = {};
+// kid: returns full plan including a clothing "spec" for the SVG figure
+// spec keys -> rendered as SVG layers
+function kidOutfit(temp, code, season, lang) {
+  const T = lang === 'bg';
+  let band, items, spec;
 
-/* ============================================================
-   FETCH
-   ============================================================ */
+  // Temperature bands tuned for children (kids feel cold faster, hot faster)
+  if (temp >= 28) {
+    band = 'hot';
+    spec = { skin: 'tan', top: 'tank', bottom: 'shorts', shoes: 'sandals', hat: 'sun', extras: ['sunglasses'] };
+    items = T ? ['Тънка тениска / потник','Къси панталонки','Сандали','Слънчева шапка','Слънцезащитен крем SPF50+','Бутилка с вода'] :
+                ['Thin t-shirt / tank top','Shorts','Sandals','Sun hat','Sunscreen SPF50+','Water bottle'];
+  } else if (temp >= 22) {
+    band = 'warm';
+    spec = { skin: 'normal', top: 'tshirt', bottom: 'shorts', shoes: 'sneakers', hat: 'cap', extras: [] };
+    items = T ? ['Тениска','Къси панталони или рокличка','Маратонки','Шапка с козирка','Слънцезащитен крем'] :
+                ['T-shirt','Shorts or summer dress','Sneakers','Cap with visor','Sunscreen'];
+  } else if (temp >= 15) {
+    band = 'mild';
+    spec = { skin: 'normal', top: 'longsleeve', bottom: 'pants', shoes: 'sneakers', hat: null, extras: ['lightjacket'] };
+    items = T ? ['Дълъг ръкав','Дълъг панталон','Леко якенце за вечер','Маратонки','Резервна тениска'] :
+                ['Long-sleeve top','Long pants','Light jacket for evening','Sneakers','Spare t-shirt'];
+  } else if (temp >= 8) {
+    band = 'cool';
+    spec = { skin: 'pink', top: 'sweater', bottom: 'pants', shoes: 'sneakers', hat: null, extras: ['midjacket','scarf'] };
+    items = T ? ['Памучна блузка','Пуловер','Дълъг панталон','Преходно яке','Тънък шал','Затворени обувки'] :
+                ['Cotton undershirt','Sweater','Long pants','Mid-weight jacket','Thin scarf','Closed-toe shoes'];
+  } else if (temp >= 0) {
+    band = 'cold';
+    spec = { skin: 'pink', top: 'sweater', bottom: 'pants', shoes: 'boots', hat: 'beanie', extras: ['winterjacket','scarf','gloves'] };
+    items = T ? ['Термо бельо','Пуловер','Топъл панталон','Зимно яке','Зимна шапка','Шал','Ръкавици','Затоплени ботуши'] :
+                ['Thermal underwear','Sweater','Warm trousers','Winter coat','Winter hat','Scarf','Mittens','Insulated boots'];
+  } else {
+    band = 'freezing';
+    spec = { skin: 'pinker', top: 'sweater', bottom: 'pants', shoes: 'boots', hat: 'beanie', extras: ['heavycoat','scarf','gloves','snowpants'] };
+    items = T ? ['Двоен термо слой','Пуловер','Дебел зимен панталон','Дебело пухено яке','Качулка / зимна шапка','Шал покриващ устата','Дебели ръкавици','Зимни ботуши','Не повече от 20–30 мин навън'] :
+                ['Double thermal layer','Sweater','Snow pants over leggings','Heavy down coat','Hooded winter hat','Scarf covering mouth','Thick mittens','Insulated snow boots','Limit outdoor time to 20–30 min'];
+  }
+
+  // Weather-driven additions
+  if ([51,53,55,61,63,65,80,81,82].includes(code)) {
+    spec.extras.push('raincoat');
+    items.push(T ? 'Гумени ботуши (за локви!)' : 'Rubber boots (for puddles!)');
+    items.push(T ? 'Дъждобран с качулка' : 'Hooded raincoat');
+  }
+  if ([71,73,75,77,85,86].includes(code)) {
+    if (!spec.extras.includes('snowpants')) spec.extras.push('snowpants');
+    items.push(T ? 'Водоустойчив зимен гащеризон' : 'Waterproof snow suit');
+  }
+  if (code >= 95) {
+    items.push(T ? '⚠ Силна буря — играйте на закрито' : '⚠ Severe storm — play indoors');
+  }
+
+  return { band, spec, items, season };
+}
+
+/* =================================================================
+   KID FIGURE — SVG rendering (v2.0 core feature)
+   parametric kid silhouette with layered outfit
+   ================================================================= */
+function renderKidFigure(spec, opts = {}) {
+  const small = opts.small;
+  const w = small ? 36 : 140;
+  const h = small ? 50 : 200;
+
+  // skin tone — porcelain-warm Asian-European palette (v2.3)
+  const SKIN = {
+    tan:    '#f0d2b3',   // sun-kissed porcelain
+    normal: '#fadcc4',   // warm porcelain
+    pink:   '#fbd0bf',   // cool-kissed porcelain
+    pinker: '#f9c4b3'    // chilled porcelain
+  }[spec.skin || 'normal'];
+
+  // Black hair with subtle warm undertone (not pitch-black)
+  const HAIR = '#1f1a17';
+  const HAIR_HIGHLIGHT = '#3d2f24';
+
+  const COL = {
+    tank:    '#fcc7d3',
+    tshirt:  '#7eb6c4',
+    longsleeve: '#9b8bc4',
+    sweater: '#c87a4f',
+    shorts:  '#5a7a8f',
+    pants:   '#3d4a66',
+    sandals: '#b08a5a',
+    sneakers: '#e85a5a',
+    boots:   '#3d2f24',
+    cap:     '#e85a5a',
+    beanie:  '#c84a6a',
+    sun:     '#f5d76e',
+    sunglasses: '#2b2622',
+    lightjacket: '#a8c498',
+    midjacket:   '#9c6e58',
+    winterjacket:'#3a5d4a',
+    heavycoat:   '#2b3d4a',
+    scarf:    '#c4524a',
+    gloves:   '#3a5d4a',
+    raincoat: '#f5cf3c',
+    raincoatLine: '#b89220',
+    snowpants:'#445566'
+  };
+
+  // Determine sleeve length needed for top
+  const longSleeveTop = (spec.top === 'longsleeve' || spec.top === 'sweater');
+  const TOP_SLEEVE = COL[spec.top] || SKIN;
+
+  // Layer accumulator (drawn back-to-front)
+  let L = '';
+
+  // === LEGS BASE (skin) ===
+  L += `
+    <rect x="38" y="86" width="10" height="34" rx="3" fill="${SKIN}"/>
+    <rect x="52" y="86" width="10" height="34" rx="3" fill="${SKIN}"/>
+  `;
+
+  // === BOTTOM (pants/shorts) ===
+  if (spec.bottom === 'shorts') {
+    L += `<rect x="36" y="78" width="28" height="16" rx="2" fill="${COL.shorts}"/>`;
+  } else if (spec.bottom === 'pants') {
+    L += `
+      <rect x="38" y="78" width="10" height="44" rx="2" fill="${COL.pants}"/>
+      <rect x="52" y="78" width="10" height="44" rx="2" fill="${COL.pants}"/>
+    `;
+  }
+
+  // === TORSO BASE (skin) ===
+  L += `<rect x="36" y="55" width="28" height="35" rx="6" fill="${SKIN}"/>`;
+
+  // === ARMS BASE (skin always) ===
+  L += `
+    <rect x="26" y="55" width="10" height="30" rx="4" fill="${SKIN}"/>
+    <rect x="64" y="55" width="10" height="30" rx="4" fill="${SKIN}"/>
+  `;
+
+  // === TOP (covers torso AND arms if long-sleeve) ===
+  if (spec.top === 'tank') {
+    // Tank straps and torso panel — does NOT cover arms
+    L += `
+      <path d="M 36 60 L 36 88 L 64 88 L 64 60 L 60 56 L 56 60 L 44 60 L 40 56 Z" fill="${COL.tank}"/>
+    `;
+  } else if (spec.top === 'tshirt') {
+    // T-shirt: short sleeves cover top of arms
+    L += `
+      <path d="M 28 60 L 26 72 L 36 72 L 36 88 L 64 88 L 64 72 L 74 72 L 72 60 L 60 56 L 56 60 L 44 60 L 40 56 Z" fill="${COL.tshirt}"/>
+    `;
+  } else if (spec.top === 'longsleeve') {
+    // Long sleeve covers full arms down to wrist (~y=82)
+    L += `
+      <path d="M 28 58 L 24 84 L 32 86 L 34 84 L 36 86 L 36 90 L 64 90 L 64 86 L 66 84 L 68 86 L 76 84 L 72 58 L 60 55 L 56 58 L 44 58 L 40 55 Z" fill="${COL.longsleeve}"/>
+    `;
+  } else if (spec.top === 'sweater') {
+    // Chunky sweater, full sleeves
+    L += `
+      <path d="M 26 56 L 22 86 L 32 88 L 34 86 L 36 90 L 64 90 L 66 86 L 68 88 L 78 86 L 74 56 L 60 53 L 56 56 L 44 56 L 40 53 Z" fill="${COL.sweater}"/>
+      <line x1="34" y1="62" x2="34" y2="86" stroke="rgba(0,0,0,.12)" stroke-width="0.5"/>
+      <line x1="50" y1="60" x2="50" y2="90" stroke="rgba(0,0,0,.12)" stroke-width="0.5"/>
+      <line x1="66" y1="62" x2="66" y2="86" stroke="rgba(0,0,0,.12)" stroke-width="0.5"/>
+    `;
+  }
+
+  // === JACKETS (each covers full body width with proper sleeves) ===
+  // helper that draws a jacket as a single shape with sleeves
+  function jacket(color, opts = {}) {
+    const top = opts.top != null ? opts.top : 56;
+    const bottom = opts.bottom != null ? opts.bottom : 92;
+    const armEnd = opts.armEnd != null ? opts.armEnd : 86; // wrist line
+    const flare = opts.flare || 0; // extra width at hem
+    return `
+      <path d="
+        M 28 ${top}
+        L 22 ${armEnd-2}
+        L 24 ${armEnd}
+        L 32 ${armEnd-1}
+        L 34 ${top+6}
+        L 30 ${bottom}
+        L ${50-flare} ${bottom}
+        L ${50+flare} ${bottom}
+        L 70 ${bottom}
+        L 66 ${top+6}
+        L 68 ${armEnd-1}
+        L 76 ${armEnd}
+        L 78 ${armEnd-2}
+        L 72 ${top}
+        L 60 ${top-3}
+        L 56 ${top}
+        L 44 ${top}
+        L 40 ${top-3}
+        Z" fill="${color}"/>
+      <line x1="50" y1="${top}" x2="50" y2="${bottom}" stroke="rgba(0,0,0,.18)" stroke-width="0.6"/>
+    `;
+  }
+
+  if (spec.extras.includes('lightjacket')) {
+    L += jacket(COL.lightjacket, { top: 60, bottom: 92, armEnd: 84 });
+  }
+  if (spec.extras.includes('midjacket')) {
+    L += jacket(COL.midjacket, { top: 56, bottom: 94, armEnd: 86 });
+    // pocket lines
+    L += `
+      <line x1="32" y1="78" x2="42" y2="78" stroke="rgba(0,0,0,.2)" stroke-width="0.5"/>
+      <line x1="58" y1="78" x2="68" y2="78" stroke="rgba(0,0,0,.2)" stroke-width="0.5"/>
+    `;
+  }
+  if (spec.extras.includes('winterjacket')) {
+    L += jacket(COL.winterjacket, { top: 54, bottom: 96, armEnd: 88, flare: 2 });
+    // puffer ridges
+    L += `
+      <line x1="22" y1="68" x2="78" y2="68" stroke="rgba(0,0,0,.15)" stroke-width="0.5"/>
+      <line x1="22" y1="78" x2="78" y2="78" stroke="rgba(0,0,0,.15)" stroke-width="0.5"/>
+      <line x1="22" y1="88" x2="78" y2="88" stroke="rgba(0,0,0,.15)" stroke-width="0.5"/>
+    `;
+  }
+  if (spec.extras.includes('heavycoat')) {
+    // hood first (behind head — drawn before head finalization)
+    L += `<path d="M 28 22 Q 50 6 72 22 L 70 32 Q 50 18 30 32 Z" fill="${COL.heavycoat}"/>`;
+    L += jacket(COL.heavycoat, { top: 52, bottom: 100, armEnd: 90, flare: 4 });
+    L += `
+      <line x1="20" y1="66" x2="80" y2="66" stroke="rgba(0,0,0,.18)" stroke-width="0.5"/>
+      <line x1="18" y1="76" x2="82" y2="76" stroke="rgba(0,0,0,.18)" stroke-width="0.5"/>
+      <line x1="18" y1="86" x2="82" y2="86" stroke="rgba(0,0,0,.18)" stroke-width="0.5"/>
+      <line x1="18" y1="94" x2="82" y2="94" stroke="rgba(0,0,0,.18)" stroke-width="0.5"/>
+    `;
+  }
+  if (spec.extras.includes('snowpants')) {
+    // overrides pants — drawn over leg area
+    L += `
+      <rect x="36" y="76" width="13" height="48" rx="3" fill="${COL.snowpants}"/>
+      <rect x="51" y="76" width="13" height="48" rx="3" fill="${COL.snowpants}"/>
+    `;
+  }
+  if (spec.extras.includes('raincoat')) {
+    // hood
+    L += `<path d="M 30 22 Q 50 8 70 22 L 68 32 Q 50 20 32 32 Z" fill="${COL.raincoat}" stroke="${COL.raincoatLine}" stroke-width="0.5"/>`;
+    L += jacket(COL.raincoat, { top: 56, bottom: 96, armEnd: 88, flare: 2 });
+    // shimmer
+    L += `
+      <circle cx="32" cy="74" r="0.8" fill="white" opacity=".7"/>
+      <circle cx="68" cy="80" r="0.8" fill="white" opacity=".7"/>
+    `;
+  }
+
+  // === SHOES ===
+  if (spec.shoes === 'sandals') {
+    L += `
+      <ellipse cx="43" cy="122" rx="6" ry="3" fill="${COL.sandals}"/>
+      <ellipse cx="57" cy="122" rx="6" ry="3" fill="${COL.sandals}"/>
+      <line x1="40" y1="118" x2="46" y2="120" stroke="${COL.sandals}" stroke-width="1"/>
+      <line x1="54" y1="118" x2="60" y2="120" stroke="${COL.sandals}" stroke-width="1"/>
+    `;
+  } else if (spec.shoes === 'sneakers') {
+    L += `
+      <path d="M 36 118 L 36 122 Q 36 126 40 126 L 50 126 L 50 118 Z" fill="${COL.sneakers}"/>
+      <path d="M 50 118 L 50 126 L 60 126 Q 64 126 64 122 L 64 118 Z" fill="${COL.sneakers}"/>
+      <line x1="36" y1="123" x2="50" y2="123" stroke="white" stroke-width="0.8"/>
+      <line x1="50" y1="123" x2="64" y2="123" stroke="white" stroke-width="0.8"/>
+    `;
+  } else if (spec.shoes === 'boots') {
+    L += `
+      <path d="M 36 110 L 36 124 Q 36 128 40 128 L 52 128 L 52 110 Z" fill="${COL.boots}"/>
+      <path d="M 48 110 L 48 128 L 60 128 Q 64 128 64 124 L 64 110 Z" fill="${COL.boots}"/>
+      <line x1="36" y1="124" x2="52" y2="124" stroke="rgba(255,255,255,.3)" stroke-width="0.8"/>
+      <line x1="48" y1="124" x2="64" y2="124" stroke="rgba(255,255,255,.3)" stroke-width="0.8"/>
+    `;
+  }
+
+  // === SCARF (over jackets) ===
+  if (spec.extras.includes('scarf')) {
+    L += `
+      <path d="M 38 50 Q 50 58 62 50 L 64 60 Q 50 66 36 60 Z" fill="${COL.scarf}"/>
+      <rect x="40" y="58" width="6" height="16" fill="${COL.scarf}"/>
+    `;
+  }
+
+  // === HEAD (drawn AFTER scarf so face is on top, but before sunglasses) ===
+  // CUTE GIRL (v2.3): Asian-European features, long black hair with bangs, almond eyes, hair bow
+  L += `
+    <!-- neck -->
+    <rect x="44" y="49" width="12" height="9" fill="${SKIN}"/>
+
+    <!-- LONG hair behind head — flows down past shoulders, drawn first so head sits on top -->
+    <path d="M 30 32
+             L 26 56
+             Q 26 64 30 66
+             L 34 60
+             L 36 50
+             L 32 32 Z" fill="${HAIR}"/>
+    <path d="M 70 32
+             L 74 56
+             Q 74 64 70 66
+             L 66 60
+             L 64 50
+             L 68 32 Z" fill="${HAIR}"/>
+    <!-- subtle hair shine on the long strands -->
+    <path d="M 28 38 Q 27 50 29 60" stroke="${HAIR_HIGHLIGHT}" stroke-width="0.6" fill="none" opacity="0.6"/>
+    <path d="M 72 38 Q 73 50 71 60" stroke="${HAIR_HIGHLIGHT}" stroke-width="0.6" fill="none" opacity="0.6"/>
+
+    <!-- head: rounder, softer -->
+    <ellipse cx="50" cy="33" rx="17.5" ry="18.5" fill="${SKIN}"/>
+
+    <!-- chin shadow for depth -->
+    <ellipse cx="50" cy="48" rx="9" ry="1.8" fill="rgba(0,0,0,0.04)"/>
+
+    <!-- ears (small, partly covered by hair) -->
+    <ellipse cx="32.5" cy="34" rx="2" ry="3" fill="${SKIN}"/>
+    <ellipse cx="67.5" cy="34" rx="2" ry="3" fill="${SKIN}"/>
+
+    <!-- BANGS — soft swept-side bangs covering forehead with gentle curve -->
+    <path d="M 32 26
+             Q 32 14 50 13
+             Q 68 14 68 26
+             Q 68 30 64 31
+             Q 60 30 56 30
+             Q 50 30 44 30
+             Q 40 30 36 31
+             Q 32 30 32 26 Z" fill="${HAIR}"/>
+    <!-- soft side-swept bang detail across the forehead -->
+    <path d="M 36 22 Q 50 26 64 22" stroke="${HAIR_HIGHLIGHT}" stroke-width="0.8" fill="none" opacity="0.5"/>
+    <!-- side strand of hair sweeping down beside cheek (left) -->
+    <path d="M 32 28 Q 30 38 33 46 Q 35 42 35 36 Q 35 30 32 28 Z" fill="${HAIR}"/>
+    <!-- side strand right -->
+    <path d="M 68 28 Q 70 38 67 46 Q 65 42 65 36 Q 65 30 68 28 Z" fill="${HAIR}"/>
+
+    <!-- HAIR BOW on the side — a girly accent -->
+    <g>
+      <!-- bow loops -->
+      <ellipse cx="33" cy="20" rx="3.5" ry="2.5" fill="${COL.beanie || '#d96680'}" stroke="rgba(0,0,0,.2)" stroke-width="0.4" transform="rotate(-15 33 20)"/>
+      <ellipse cx="40" cy="19" rx="3.5" ry="2.5" fill="${COL.beanie || '#d96680'}" stroke="rgba(0,0,0,.2)" stroke-width="0.4" transform="rotate(15 40 19)"/>
+      <!-- bow center knot -->
+      <circle cx="36.5" cy="19.5" r="1.4" fill="${COL.beanie || '#b8526a'}"/>
+    </g>
+
+    <!-- ALMOND-SHAPED EYES — slightly upturned, expressive -->
+    <!-- eye whites (almond outline) -->
+    <path d="M 39 33 Q 43 30.5 47 33 Q 43 35.5 39 33 Z" fill="white"/>
+    <path d="M 53 33 Q 57 30.5 61 33 Q 57 35.5 53 33 Z" fill="white"/>
+    <!-- almond outline (subtle eyelid line — top eyelid, defines the shape) -->
+    <path d="M 39 33 Q 43 30.3 47 33" stroke="#2b2622" stroke-width="0.9" fill="none" stroke-linecap="round"/>
+    <path d="M 53 33 Q 57 30.3 61 33" stroke="#2b2622" stroke-width="0.9" fill="none" stroke-linecap="round"/>
+    <!-- pupils (large, dark) -->
+    <ellipse cx="43" cy="33.3" rx="1.8" ry="2.1" fill="#2b2622"/>
+    <ellipse cx="57" cy="33.3" rx="1.8" ry="2.1" fill="#2b2622"/>
+    <!-- sparkle highlights — the cuteness multiplier -->
+    <circle cx="43.6" cy="32.4" r="0.7" fill="white"/>
+    <circle cx="57.6" cy="32.4" r="0.7" fill="white"/>
+    <circle cx="42.5" cy="34" r="0.35" fill="white" opacity="0.8"/>
+    <circle cx="56.5" cy="34" r="0.35" fill="white" opacity="0.8"/>
+
+    <!-- delicate eyebrows — thin smooth arches placed well above the eyes -->
+    <path d="M 40 27.8 Q 43 26.8 46 27.8" stroke="${HAIR}" stroke-width="0.6" fill="none" stroke-linecap="round"/>
+    <path d="M 54 27.8 Q 57 26.8 60 27.8" stroke="${HAIR}" stroke-width="0.6" fill="none" stroke-linecap="round"/>
+
+    <!-- always-rosy cheeks -->
+    <ellipse cx="38.5" cy="38.5" rx="3" ry="2" fill="${(spec.skin === 'pink' || spec.skin === 'pinker') ? 'rgba(240,120,130,.55)' : 'rgba(240,160,170,.4)'}"/>
+    <ellipse cx="61.5" cy="38.5" rx="3" ry="2" fill="${(spec.skin === 'pink' || spec.skin === 'pinker') ? 'rgba(240,120,130,.55)' : 'rgba(240,160,170,.4)'}"/>
+
+    <!-- tiny button nose — barely there -->
+    <ellipse cx="50" cy="38" rx="0.7" ry="0.6" fill="rgba(200,140,120,0.4)"/>
+
+    <!-- LITTLE PINK LIPS — heart-shape hint -->
+    <path d="M 47 42.5 Q 48.5 41.5 50 42.5 Q 51.5 41.5 53 42.5 Q 51 44.5 50 44.5 Q 49 44.5 47 42.5 Z"
+          fill="rgba(220,100,110,.7)" stroke="rgba(180,80,90,.5)" stroke-width="0.3"/>
+    <!-- tiny lip highlight -->
+    <ellipse cx="50" cy="42.7" rx="0.8" ry="0.3" fill="rgba(255,255,255,.5)"/>
+  `;
+
+  // === HAT (over hair, but check if hood is up) ===
+  const hoodUp = spec.extras.includes('heavycoat') || spec.extras.includes('raincoat');
+  if (spec.hat === 'sun' && !hoodUp) {
+    L += `
+      <ellipse cx="50" cy="19" rx="24" ry="4" fill="${COL.sun}"/>
+      <ellipse cx="50" cy="14" rx="14" ry="7" fill="${COL.sun}"/>
+      <path d="M 36 19 Q 50 12 64 19" stroke="rgba(180,140,40,.5)" stroke-width="0.6" fill="none"/>
+      <!-- ribbon -->
+      <ellipse cx="50" cy="14" rx="14" ry="2" fill="rgba(180,140,40,.3)"/>
+    `;
+  } else if (spec.hat === 'cap' && !hoodUp) {
+    L += `
+      <path d="M 34 22 Q 34 10 50 10 Q 66 10 66 22 L 66 24 L 34 24 Z" fill="${COL.cap}"/>
+      <ellipse cx="64" cy="24" rx="11" ry="2.5" fill="${COL.cap}"/>
+      <!-- cap button -->
+      <circle cx="50" cy="11" r="1.2" fill="${COL.cap}" stroke="rgba(0,0,0,.2)" stroke-width="0.4"/>
+    `;
+  } else if (spec.hat === 'beanie') {
+    // beanie shows even with hood (under it)
+    L += `
+      <path d="M 30 26 Q 30 10 50 10 Q 70 10 70 26 L 70 30 L 30 30 Z" fill="${COL.beanie}"/>
+      <rect x="30" y="28" width="40" height="4" fill="${COL.beanie}" stroke="rgba(0,0,0,.2)" stroke-width="0.3"/>
+      <!-- pom-pom on top — extra cute -->
+      <circle cx="50" cy="8" r="3.5" fill="${COL.beanie}"/>
+      <circle cx="50" cy="8" r="2" fill="white" opacity="0.4"/>
+    `;
+  }
+
+  // === GLOVES/MITTENS (drawn LAST at hands position so they show over jacket sleeves) ===
+  if (spec.extras.includes('gloves')) {
+    // place at the wrist position — adapts to jacket sleeve length
+    let wrist = 86;
+    if (spec.extras.includes('heavycoat')) wrist = 92;
+    else if (spec.extras.includes('winterjacket')) wrist = 90;
+    else if (spec.extras.includes('raincoat')) wrist = 90;
+    L += `
+      <ellipse cx="29" cy="${wrist}" rx="5.5" ry="4.5" fill="${COL.gloves}"/>
+      <ellipse cx="71" cy="${wrist}" rx="5.5" ry="4.5" fill="${COL.gloves}"/>
+    `;
+  }
+
+  // === SUNGLASSES (only if no hood up) ===
+  if (spec.extras.includes('sunglasses')) {
+    L += `
+      <rect x="40" y="32" width="8" height="5" rx="1.5" fill="${COL.sunglasses}"/>
+      <rect x="52" y="32" width="8" height="5" rx="1.5" fill="${COL.sunglasses}"/>
+      <line x1="48" y1="34.5" x2="52" y2="34.5" stroke="${COL.sunglasses}" stroke-width="1"/>
+    `;
+  }
+
+  return `<svg class="kid-figure" viewBox="0 0 100 140" width="${w}" height="${h}" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" aria-label="kid outfit">${L}</svg>`;
+}
+
+/* =================================================================
+   ANIMATED WEATHER ICONS (v2.2)
+   Returns an SVG string for a given Open-Meteo weather code.
+   ================================================================= */
+function weatherIcon(code, size = 56) {
+  // viewBox is 0 0 64 64; uses CSS classes for animations
+  const sun = (cx, cy, r) => `
+    <g class="sun-rays">
+      <line x1="${cx}" y1="${cy-r-7}" x2="${cx}" y2="${cy-r-2}" stroke="#d9a02a" stroke-width="2" stroke-linecap="round"/>
+      <line x1="${cx}" y1="${cy+r+2}" x2="${cx}" y2="${cy+r+7}" stroke="#d9a02a" stroke-width="2" stroke-linecap="round"/>
+      <line x1="${cx-r-7}" y1="${cy}" x2="${cx-r-2}" y2="${cy}" stroke="#d9a02a" stroke-width="2" stroke-linecap="round"/>
+      <line x1="${cx+r+2}" y1="${cy}" x2="${cx+r+7}" y2="${cy}" stroke="#d9a02a" stroke-width="2" stroke-linecap="round"/>
+      <line x1="${cx-r-5}" y1="${cy-r-5}" x2="${cx-r-1}" y2="${cy-r-1}" stroke="#d9a02a" stroke-width="2" stroke-linecap="round"/>
+      <line x1="${cx+r+1}" y1="${cy+r+1}" x2="${cx+r+5}" y2="${cy+r+5}" stroke="#d9a02a" stroke-width="2" stroke-linecap="round"/>
+      <line x1="${cx-r-5}" y1="${cy+r+5}" x2="${cx-r-1}" y2="${cy+r+1}" stroke="#d9a02a" stroke-width="2" stroke-linecap="round"/>
+      <line x1="${cx+r+1}" y1="${cy-r-1}" x2="${cx+r+5}" y2="${cy-r-5}" stroke="#d9a02a" stroke-width="2" stroke-linecap="round"/>
+    </g>
+    <circle class="sun-core" cx="${cx}" cy="${cy}" r="${r}" fill="#f5d76e" stroke="#d9a02a" stroke-width="1.5"/>
+  `;
+
+  // Cloud path centered around (cx, cy)
+  const cloud = (cx, cy, scale = 1, fill = '#cdd3da', stroke = '#7d8590', cls = 'cloud-drift') => {
+    const s = scale;
+    return `<g class="${cls}">
+      <path d="M ${cx-15*s} ${cy+5*s}
+               q -7*${s} 0 -7*${s} -7*${s}
+               q 0 -8*${s} 9*${s} -8*${s}
+               q 1*${s} -7*${s} 9*${s} -7*${s}
+               q 9*${s} 0 10*${s} 8*${s}
+               q 8*${s} 0 8*${s} 7*${s}
+               q 0 7*${s} -7*${s} 7*${s}
+               Z"
+        fill="${fill}" stroke="${stroke}" stroke-width="1.4" stroke-linejoin="round"
+        transform="translate(${cx} ${cy}) scale(${s}) translate(${-cx} ${-cy})"/>
+    </g>`;
+  };
+
+  // simpler cloud helper using ellipse stack (more reliable rendering)
+  const cloudShape = (cx, cy, w = 28, fill = '#cdd3da', stroke = '#7d8590') => `
+    <g class="cloud-drift">
+      <ellipse cx="${cx-w*0.25}" cy="${cy+w*0.1}" rx="${w*0.35}" ry="${w*0.28}" fill="${fill}" stroke="${stroke}" stroke-width="1.3"/>
+      <ellipse cx="${cx+w*0.25}" cy="${cy+w*0.1}" rx="${w*0.32}" ry="${w*0.26}" fill="${fill}" stroke="${stroke}" stroke-width="1.3"/>
+      <ellipse cx="${cx}" cy="${cy-w*0.1}" rx="${w*0.4}" ry="${w*0.32}" fill="${fill}" stroke="${stroke}" stroke-width="1.3"/>
+      <rect x="${cx-w*0.5}" y="${cy+w*0.05}" width="${w}" height="${w*0.2}" fill="${fill}"/>
+    </g>
+  `;
+
+  let body = '';
+
+  if (code === 0 || code === 1) {
+    // Clear / mainly clear — big sun
+    body = sun(32, 32, 10);
+  } else if (code === 2) {
+    // Partly cloudy — sun + cloud overlap
+    body = sun(22, 22, 8) + cloudShape(38, 38, 26);
+  } else if (code === 3 || code === 45 || code === 48) {
+    // Overcast / fog — pure cloud or fog bars
+    if (code === 45 || code === 48) {
+      body = cloudShape(32, 24, 28) + `
+        <rect class="fog-bar fog-bar-1" x="14" y="40" width="36" height="3" rx="1.5" fill="#a0a8b0"/>
+        <rect class="fog-bar fog-bar-2" x="18" y="46" width="28" height="3" rx="1.5" fill="#a0a8b0"/>
+        <rect class="fog-bar fog-bar-3" x="14" y="52" width="36" height="3" rx="1.5" fill="#a0a8b0"/>
+      `;
+    } else {
+      body = cloudShape(32, 32, 32, '#b8bec5', '#6d747e');
+    }
+  } else if ([51,53,55,61,63,65,80,81,82].includes(code)) {
+    // Rain
+    body = cloudShape(32, 22, 30, '#9aa3ae', '#5d6470') + `
+      <line class="drop drop-1" x1="22" y1="40" x2="20" y2="48" stroke="#5b8fb2" stroke-width="2" stroke-linecap="round"/>
+      <line class="drop drop-2" x1="30" y1="40" x2="28" y2="48" stroke="#5b8fb2" stroke-width="2" stroke-linecap="round"/>
+      <line class="drop drop-3" x1="38" y1="40" x2="36" y2="48" stroke="#5b8fb2" stroke-width="2" stroke-linecap="round"/>
+      <line class="drop drop-4" x1="46" y1="40" x2="44" y2="48" stroke="#5b8fb2" stroke-width="2" stroke-linecap="round"/>
+    `;
+  } else if ([71,73,75,77,85,86].includes(code)) {
+    // Snow
+    body = cloudShape(32, 22, 30, '#d8dde2', '#7d8590') + `
+      <text class="flake flake-1" x="22" y="48" font-size="10" fill="#a0b8cc" text-anchor="middle">❄</text>
+      <text class="flake flake-2" x="32" y="48" font-size="10" fill="#a0b8cc" text-anchor="middle">❄</text>
+      <text class="flake flake-3" x="42" y="48" font-size="10" fill="#a0b8cc" text-anchor="middle">❄</text>
+    `;
+  } else if (code >= 95) {
+    // Thunderstorm
+    body = cloudShape(32, 22, 30, '#7d848e', '#4a5058') + `
+      <polygon class="bolt" points="30,38 36,38 32,46 38,46 28,58 32,48 26,48" fill="#f5c038" stroke="#b08a20" stroke-width="0.8" stroke-linejoin="round"/>
+      <line class="drop drop-1" x1="22" y1="40" x2="20" y2="48" stroke="#5b8fb2" stroke-width="1.5" stroke-linecap="round"/>
+      <line class="drop drop-3" x1="44" y1="40" x2="42" y2="48" stroke="#5b8fb2" stroke-width="1.5" stroke-linecap="round"/>
+    `;
+  } else {
+    // Fallback: cloud
+    body = cloudShape(32, 32, 30);
+  }
+
+  return `<svg class="wx-icon" viewBox="0 0 64 64" width="${size}" height="${size}" xmlns="http://www.w3.org/2000/svg" aria-label="weather">${body}</svg>`;
+}
+
+/* =================================================================
+   LOCAL TIME helper (v2.2)
+   ================================================================= */
+function localTimeFor(tz, lang) {
+  try {
+    const now = new Date();
+    const time = now.toLocaleTimeString(lang === 'bg' ? 'bg-BG' : 'en-GB', {
+      timeZone: tz, hour: '2-digit', minute: '2-digit', hour12: false
+    });
+    // Compute UTC offset label
+    const offsetFmt = new Intl.DateTimeFormat('en-US', { timeZone: tz, timeZoneName: 'shortOffset' }).formatToParts(now);
+    const off = offsetFmt.find(p => p.type === 'timeZoneName')?.value?.replace('GMT', 'UTC') || '';
+    return { time, off };
+  } catch (e) {
+    return { time: '--:--', off: '' };
+  }
+}
+
+
 async function fetchCity(city) {
   const url = `https://api.open-meteo.com/v1/forecast?latitude=${city.lat}&longitude=${city.lon}` +
-    `&current=temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,wind_speed_10m,precipitation` +
-    `&hourly=temperature_2m,weather_code,precipitation_probability` +
-    `&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max` +
-    `&timezone=${encodeURIComponent(city.tz)}&forecast_days=5&past_days=0` +
-    `&wind_speed_unit=kmh&temperature_unit=celsius`;
+              `&current=temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,wind_speed_10m,precipitation` +
+              `&daily=temperature_2m_max,temperature_2m_min,weather_code,precipitation_probability_max` +
+              `&timezone=auto&forecast_days=6`;
   const res = await fetch(url);
-  if (!res.ok) throw new Error('Network ' + res.status);
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
   return res.json();
 }
 
-/* ============================================================
+/* =================================================================
    RENDER
-   ============================================================ */
-function applyStaticLang() {
-  const t = I18N[currentLang];
-  document.documentElement.lang = t.htmlLang;
-
-  document.getElementById('m-left').innerHTML = t.masthead.left;
-  document.getElementById('m-title').innerHTML = t.masthead.title;
-  document.getElementById('m-live').textContent = t.masthead.live;
-  document.getElementById('s-cities').textContent = t.strapCities;
-  document.getElementById('s-units').textContent = t.strapUnits;
-  document.getElementById('f-credit').textContent = t.credit;
-  document.getElementById('f-data').innerHTML = t.dataLabel + '<a href="https://open-meteo.com" target="_blank">open-meteo.com</a>';
-
-  document.querySelectorAll('[data-feel-label]').forEach(el => el.textContent = t.feelLabel);
-  document.querySelectorAll('[data-clothing-h]').forEach(el => el.textContent = t.clothingH[currentMode]);
-  document.querySelectorAll('[data-h]').forEach(el => el.textContent = t.sections[el.dataset.h]);
-  document.querySelectorAll('.city-num').forEach(el => {
-    el.textContent = t.no + ' ' + el.dataset.num;
+   ================================================================= */
+function applyToggleLabels() {
+  const I = I18N[currentLang];
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const k = el.getAttribute('data-i18n');
+    if (I[k]) el.textContent = I[k];
   });
-  document.querySelectorAll('[data-lbl]').forEach(el => {
-    el.textContent = t.labels[el.dataset.lbl];
+  // active states
+  document.querySelectorAll('#lang-toggle button').forEach(b => {
+    b.classList.toggle('active', b.dataset.lang === currentLang);
   });
-
-  document.querySelectorAll('.card').forEach(card => {
-    const id = card.dataset.city;
-    card.querySelector('[data-city-name]').textContent = t.cities[id].name;
-    card.querySelector('[data-city-country]').textContent = t.cities[id].country;
+  document.querySelectorAll('#mode-toggle button').forEach(b => {
+    b.classList.toggle('active', b.dataset.mode === currentMode);
   });
-
-  document.getElementById('btn-en').classList.toggle('active', currentLang === 'en');
-  document.getElementById('btn-bg').classList.toggle('active', currentLang === 'bg');
-  document.getElementById('btn-adult').classList.toggle('active', currentMode === 'adult');
-  document.getElementById('btn-kid').classList.toggle('active', currentMode === 'kid');
-
-  /* Toggle kid-mode visual styling on each clothing block */
-  document.querySelectorAll('.clothing').forEach(c => {
-    c.classList.toggle('kid-mode', currentMode === 'kid');
-  });
-
-  const now = new Date();
-  document.getElementById('masthead-date').textContent =
-    now.toLocaleDateString(t.locale, { weekday:'long', day:'numeric', month:'long', year:'numeric' });
-  document.getElementById('last-update').textContent =
-    `${t.lastUpdate} ${now.toLocaleTimeString(t.locale, { hour:'2-digit', minute:'2-digit', second:'2-digit' })}`;
-
-  /* Refresh city clocks too — they format using the locale */
-  if (typeof updateClocks === 'function') updateClocks();
+  // Language class on body — used to apply per-language typography adjustments
+  document.body.classList.toggle('lang-bg', currentLang === 'bg');
+  document.body.classList.toggle('lang-en', currentLang === 'en');
+  updateTodayDate();
 }
 
+// Today's date — format: "05-May / Tuesday" (EN) or "05-Май / Вторник" (BG)
+function updateTodayDate() {
+  const I = I18N[currentLang];
+  const el = document.getElementById('today-value');
+  if (!el || !I.monthsShort) return;
+  const d = new Date();
+  const dd = String(d.getDate()).padStart(2, '0');
+  const mm = I.monthsShort[d.getMonth()];
+  const wk = I.weekdays[d.getDay()];
+  el.textContent = `${dd}-${mm} / ${wk}`;
+}
+
+function fmtTemp(v) { return Math.round(v); }
+
 function renderCity(cityId, data) {
-  const t = I18N[currentLang];
   const city = CITIES.find(c => c.id === cityId);
   const card = document.querySelector(`.card[data-city="${cityId}"]`);
-  if (!card) return;
-  card.classList.remove('loading');
+  if (!card || !data) return;
 
+  const I = I18N[currentLang];
+  const isKid = currentMode === 'kid';
   const cur = data.current;
-  const today = data.daily;
-  const code = cur.weather_code;
-  const wmo = WMO[code] || { en:'—', bg:'—', icon:'cloud' };
-  const rainChance = today.precipitation_probability_max?.[0] ?? 0;
+  const cond = I.conditions[cur.weather_code] || '—';
+  const season = getSeason(city.climate);
+  const cityName = currentLang === 'bg' ? city.name_bg : city.name;
 
-  card.querySelector('.t-now').textContent = Math.round(cur.temperature_2m);
-  card.querySelector('.t-feel').textContent = Math.round(cur.apparent_temperature);
-  card.querySelector(`#cond-${cityId}`).textContent = wmo[currentLang] + '.';
-  document.getElementById(`icon-${cityId}`).innerHTML = ICONS[wmo.icon] || ICONS.cloud;
+  card.classList.toggle('kid', isKid);
+  card.classList.add('fade');
+  setTimeout(() => card.classList.remove('fade'), 420);
 
-  card.querySelector('.s-wind').innerHTML = Math.round(cur.wind_speed_10m) + '<small>km/h</small>';
-  card.querySelector('.s-hum').innerHTML  = Math.round(cur.relative_humidity_2m) + '<small>%</small>';
-  card.querySelector('.s-rain').innerHTML = rainChance + '<small>%</small>';
+  // Build outfit data
+  const adultItems = adultOutfit(cur.temperature_2m, cur.weather_code, currentLang);
+  const kidPlan    = kidOutfit(cur.temperature_2m, cur.weather_code, season, currentLang);
 
-  /* HOURLY (next 24h, starting from current hour in CITY's timezone) */
-  const hr = document.getElementById(`hr-${cityId}`);
-  hr.innerHTML = '';
-  const hourly = data.hourly;
-  /* Open-Meteo returns current.time as ISO string in the city's timezone (e.g.
-     "2026-05-04T14:00") with NO trailing Z. Match its hour against hourly.time
-     entries by string prefix — this avoids viewer-timezone confusion. */
-  const currentISO = data.current.time; // e.g. "2026-05-04T14:00"
-  const currentHourPrefix = currentISO.slice(0, 13); // "2026-05-04T14"
-  let startIdx = hourly.time.findIndex(t => t.startsWith(currentHourPrefix));
-  if (startIdx < 0) startIdx = 0;
-  for (let i = 0; i < 12; i++) {
-    const idx = startIdx + i;
-    if (idx >= hourly.time.length) break;
-    /* Hour label parsed directly from the ISO string — viewer-tz independent */
-    const hLabel = hourly.time[idx].slice(11, 13); // "14"
-    const isNow = i === 0;
-    const hCode = hourly.weather_code[idx];
-    const hIcon = TINY_ICON[(WMO[hCode] || {icon:'cloud'}).icon] || '☁';
-    const hRain = hourly.precipitation_probability[idx] ?? 0;
-    hr.innerHTML += `
-      <div class="hour ${isNow ? 'now' : ''}">
-        <div class="ht">${isNow ? t.now : (hLabel + ':00')}</div>
-        <div class="hi">${hIcon}</div>
-        <div class="hv">${Math.round(hourly.temperature_2m[idx])}°</div>
-        <div class="hr">${hRain >= 20 ? hRain + '%' : '·'}</div>
-      </div>`;
+  // Stage HTML (kid mode shows the figure, adult mode shows nothing here)
+  const stageHTML = isKid ? `
+    <div class="outfit-stage">
+      <div class="stage-label">${I.todayKid} · ${cityName}</div>
+      ${renderKidFigure(kidPlan.spec)}
+      <div class="outfit-caption">${captionFor(kidPlan.band, currentLang)}</div>
+      <div class="layer-chips">${chipsFor(kidPlan.spec, currentLang).map(c => `<span class="chip">${c}</span>`).join('')}</div>
+    </div>
+  ` : '';
+
+  // 5-day forecast (compact)
+  const forecastHTML = renderForecast(data.daily, I);
+
+  // parent advice (kid mode only) — 5-day mini outfits
+  const parentHTML = isKid ? buildParentAdvice(data.daily, season, currentLang, I) : '';
+
+  // Tip
+  const tipText = isKid ? kidTipFor(cur.temperature_2m, cur.weather_code, currentLang)
+                        : adultTipFor(cur.temperature_2m, cur.weather_code, currentLang);
+
+  // List of items
+  const items = isKid ? kidPlan.items : adultItems;
+  const listHTML = items.map(it => `<li>${it}</li>`).join('');
+
+  // Local time for this city
+  const lt = localTimeFor(city.tz, currentLang);
+  const clockHTML = `<span class="city-clock" data-tz="${city.tz}">${lt.time}<span class="clock-tz">${lt.off}</span></span>`;
+
+  // Animated weather icon
+  const iconHTML = weatherIcon(cur.weather_code, 56);
+
+  card.innerHTML = `
+    <div class="city-band"></div>
+    <div class="city-head">
+      <div class="city-head-left">
+        <div class="city-name">${cityName}</div>
+        <div class="city-meta">${city.country} · ${cur.temperature_2m >= 0 ? '+' : ''}${fmtTemp(cur.temperature_2m)}°C · ${cond}</div>
+      </div>
+      <div class="city-head-right">
+        ${clockHTML}
+        <span class="season-badge">${I[season]}</span>
+      </div>
+    </div>
+
+    <div class="now">
+      <div class="temp">${fmtTemp(cur.temperature_2m)}<span class="deg">°C</span></div>
+      ${iconHTML}
+      <div class="now-detail">
+        <span class="cond">${cond}</span>
+        ${I.feels}: ${fmtTemp(cur.apparent_temperature)}°C<br/>
+        ${I.wind}: ${Math.round(cur.wind_speed_10m)} ${I.mph}<br/>
+        ${I.humid}: ${cur.relative_humidity_2m}%<br/>
+        ${I.rain}: ${cur.precipitation || 0} mm
+      </div>
+    </div>
+
+    ${stageHTML}
+
+    <div class="section-h ${isKid ? 'kid-h' : ''}">${isKid ? I.todayKid : I.today}</div>
+    <ul class="list">${listHTML}</ul>
+
+    <div class="tip">
+      <strong>${isKid ? I.tipKid : I.tip}:</strong> ${tipText}
+    </div>
+
+    ${parentHTML}
+
+    <div class="section-h">${I.fiveDay}</div>
+    ${forecastHTML}
+  `;
+}
+
+function captionFor(band, lang) {
+  const T = lang === 'bg';
+  const m = {
+    hot:      T ? 'Леко облекло — жега' : 'Light & airy — hot day',
+    warm:    T ? 'Топло и удобно' : 'Warm & comfy',
+    mild:    T ? 'Преходно облекло' : 'Transitional layering',
+    cool:    T ? 'Слоесто — прохладно' : 'Layered up — cool',
+    cold:    T ? 'Зимна екипировка' : 'Bundled for cold',
+    freezing:T ? 'Пълен зимен режим' : 'Full winter mode'
+  };
+  return m[band] || '';
+}
+
+function chipsFor(spec, lang) {
+  const T = lang === 'bg';
+  const map = {
+    tank:   T ? 'потник' : 'tank',
+    tshirt: T ? 'тениска' : 't-shirt',
+    longsleeve: T ? 'дълъг ръкав' : 'long sleeve',
+    sweater: T ? 'пуловер' : 'sweater',
+    shorts: T ? 'шорти' : 'shorts',
+    pants:  T ? 'панталон' : 'pants',
+    sandals: T ? 'сандали' : 'sandals',
+    sneakers: T ? 'маратонки' : 'sneakers',
+    boots:   T ? 'ботуши' : 'boots',
+    sun:     T ? 'слънчева шапка' : 'sun hat',
+    cap:     T ? 'каскет' : 'cap',
+    beanie:  T ? 'зимна шапка' : 'beanie',
+    sunglasses: T ? 'очила' : 'sunglasses',
+    lightjacket: T ? 'леко яке' : 'light jacket',
+    midjacket:   T ? 'преходно яке' : 'mid jacket',
+    winterjacket:T ? 'зимно яке' : 'winter coat',
+    heavycoat:   T ? 'пухено яке' : 'heavy coat',
+    scarf:    T ? 'шал' : 'scarf',
+    gloves:   T ? 'ръкавици' : 'mittens',
+    raincoat: T ? 'дъждобран' : 'raincoat',
+    snowpants: T ? 'снежен гащеризон' : 'snowpants'
+  };
+  const out = [];
+  if (spec.top) out.push(map[spec.top]);
+  if (spec.bottom) out.push(map[spec.bottom]);
+  if (spec.shoes) out.push(map[spec.shoes]);
+  if (spec.hat) out.push(map[spec.hat]);
+  spec.extras.forEach(e => map[e] && out.push(map[e]));
+  return out.filter(Boolean);
+}
+
+function adultTipFor(t, code, lang) {
+  const T = lang === 'bg';
+  if (code >= 95) return T ? 'Силна буря — избягвайте пътувания.' : 'Severe weather — avoid unnecessary travel.';
+  if ([71,73,75,77,85,86].includes(code)) return T ? 'Заледени тротоари — обувки с грайфер.' : 'Icy walkways — wear grip-soled shoes.';
+  if ([51,53,55,61,63,65,80,81,82].includes(code)) return T ? 'Носете чадър и водоустойчиви обувки.' : 'Pack an umbrella and waterproof shoes.';
+  if (t >= 28) return T ? 'Слънцезащита и поне 2L вода днес.' : 'Sun protection and 2L of water today.';
+  if (t >= 22) return T ? 'Идеален ден за разходки и кафе на открито.' : 'Perfect day for walks and outdoor coffee.';
+  if (t >= 15) return T ? 'Облечи се на слоеве — сутрин/вечер хладно.' : 'Layer up — mornings and evenings are crisp.';
+  if (t >= 8)  return T ? 'Лек шал и преходно яке са идеални.' : 'A scarf and transitional jacket are ideal.';
+  if (t >= 0)  return T ? 'Защити уши и ръце — вятърът хапе.' : 'Protect ears and hands — wind chill bites.';
+  return T ? 'Минимизирай времето на открито.' : 'Minimize time outdoors.';
+}
+
+function kidTipFor(t, code, lang) {
+  const T = lang === 'bg';
+  if (code >= 95) return T ? 'Моята препоръка: играйте на закрито — гръмотевиците плашат децата и са опасни.' : 'My pick: play indoors — thunder is scary and dangerous for kids.';
+  if ([71,73,75,77,85,86].includes(code)) return T ? 'Кожата на децата губи топлина 3× по-бързо от тази на възрастен. Ограничи навън до 30 мин.' : "Kids lose body heat 3× faster than adults. Limit outdoor play to 30 minutes.";
+  if ([51,53,55,61,63,65,80,81,82].includes(code)) return T ? 'Гумени ботуши задължителни — децата НЕ могат да устоят на локва.' : "Rubber boots required — kids cannot resist a puddle.";
+  if (t >= 28) return T ? 'Детската кожа изгаря 3× по-бързо. SPF50+ и шапка са задължителни.' : "Children's skin burns 3× faster. SPF50+ and a hat are non-negotiable.";
+  if (t >= 22) return T ? 'Чудесен ден за парк. Носи резервна тениска — потта изстива бързо.' : 'Great park day. Pack a spare t-shirt — sweat cools fast.';
+  if (t >= 15) return T ? 'Сутрин студено, обед топло — слой, който се сваля лесно.' : 'Chilly AM, warm noon — pick a layer that comes off easily.';
+  if (t >= 8)  return T ? 'Покрий шията — там децата губят най-много топлина.' : "Cover the neck — kids lose most heat there.";
+  if (t >= 0)  return T ? 'Ръкавици с шнур през якето — никога не се губят.' : 'Mittens on a cord through the coat — they never get lost.';
+  return T ? 'Не повече от 20 мин на открито. Топла напитка след връщане.' : 'No more than 20 min outside. Warm drink after coming in.';
+}
+
+/* =================================================================
+   PARENT ADVICE — 5-day mini-figures (v2.0 NEW)
+   ================================================================= */
+function buildParentAdvice(daily, season, lang, I) {
+  const T = lang === 'bg';
+  const days = daily.time.slice(1, 6); // skip today
+  let rows = '';
+  days.forEach((d, idx) => {
+    const i = idx + 1;
+    const tmax = daily.temperature_2m_max[i];
+    const tmin = daily.temperature_2m_min[i];
+    const tavg = (tmax + tmin) / 2;
+    const code = daily.weather_code[i];
+    const dateObj = new Date(d);
+    const dayName = I.days[(dateObj.getDay() + 6) % 7]; // ISO: Mon=0
+    const plan = kidOutfit(tavg, code, season, lang);
+    const summary = miniSummary(plan.band, code, lang);
+    rows += `
+      <div class="pa-row">
+        <span class="day">${dayName}</span>
+        <span style="display:flex;align-items:center;gap:8px;">
+          ${renderKidFigure(plan.spec, { small: true })}
+          <span class="pa-text">${summary}</span>
+        </span>
+        <span class="pa-temp">${fmtTemp(tmin)}° / ${fmtTemp(tmax)}°</span>
+      </div>
+    `;
+  });
+  return `
+    <div class="parent-advice">
+      <div class="pa-h">${I.parentAdvice}</div>
+      ${rows}
+    </div>
+  `;
+}
+
+function miniSummary(band, code, lang) {
+  const T = lang === 'bg';
+  const base = {
+    hot:      T ? 'Лек тоалет + шапка' : 'Light outfit + sun hat',
+    warm:    T ? 'Тениска и шорти' : 'T-shirt and shorts',
+    mild:    T ? 'Дълъг ръкав + якенце' : 'Long sleeve + light jacket',
+    cool:    T ? 'Пуловер + преходно яке' : 'Sweater + mid jacket',
+    cold:    T ? 'Зимно яке + шапка' : 'Winter coat + hat',
+    freezing:T ? 'Пълна зимна екипировка' : 'Full winter gear'
+  }[band];
+  let suffix = '';
+  if ([51,53,55,61,63,65,80,81,82].includes(code)) suffix = T ? ' + дъждобран' : ' + raincoat';
+  else if ([71,73,75,77,85,86].includes(code))     suffix = T ? ' + снежен гащеризон' : ' + snowpants';
+  return base + suffix;
+}
+
+function renderForecast(daily, I) {
+  let html = '<div class="forecast">';
+  for (let i = 1; i <= 5; i++) {
+    const d = new Date(daily.time[i]);
+    const dn = I.days[(d.getDay() + 6) % 7];
+    const tmax = Math.round(daily.temperature_2m_max[i]);
+    const tmin = Math.round(daily.temperature_2m_min[i]);
+    html += `<div class="day"><div class="dn">${dn}</div><div class="dt">${tmax}°</div><div class="dl">${tmin}°</div></div>`;
   }
-
-  /* DAILY */
-  const fc = document.getElementById(`fc-${cityId}`);
-  fc.innerHTML = '';
-  for (let i = 0; i < 5; i++) {
-    /* Parse date string directly to avoid timezone shift */
-    const isoDay = today.time[i]; // "2026-05-04"
-    const dayName = i === 0 ? t.todayLabel : t.days[new Date(isoDay + 'T12:00:00').getDay()];
-    const fcCode = today.weather_code[i];
-    const fcIcon = TINY_ICON[(WMO[fcCode] || {icon:'cloud'}).icon] || '☁';
-    fc.innerHTML += `
-      <div class="fday">
-        <div class="d">${dayName}</div>
-        <div class="ic">${fcIcon}</div>
-        <div class="t">${Math.round(today.temperature_2m_max[i])}°<small>/${Math.round(today.temperature_2m_min[i])}°</small></div>
-      </div>`;
-  }
-
-  /* CLOTHING */
-  const month = new Date().getMonth();
-  const season = getSeason(month, city.hemisphere);
-  document.getElementById(`season-${cityId}`).textContent = t.seasons[season];
-
-  const outfit = getOutfit(cur.temperature_2m, code, rainChance, cur.wind_speed_10m, currentLang, currentMode, season);
-  document.getElementById(`outfit-title-${cityId}`).textContent = outfit.title;
-  document.getElementById(`outfit-list-${cityId}`).innerHTML =
-    outfit.items.map(it => `<li>${it}</li>`).join('');
-  document.getElementById(`tip-${cityId}`).innerHTML =
-    `<b>${t.stylistNote[currentMode]}</b> ${outfit.tip}`;
+  html += '</div>';
+  return html;
 }
 
 function renderError(cityId, msg) {
   const card = document.querySelector(`.card[data-city="${cityId}"]`);
-  if (!card) return;
-  card.classList.remove('loading');
-  card.querySelector('.t-now').textContent = '—';
-  document.getElementById(`cond-${cityId}`).textContent =
-    (currentLang === 'bg' ? 'Грешка при зареждане: ' : 'Unable to load: ') + msg;
+  if (card) card.innerHTML = `<div class="city-band"></div><div class="err">${(currentLang==='bg' ? 'Грешка: ' : 'Error: ')}${msg}</div>`;
 }
 
+/* =================================================================
+   ORCHESTRATION
+   ================================================================= */
 function renderAllFromCache() {
-  applyStaticLang();
+  applyToggleLabels();
   Object.keys(lastData).forEach(id => renderCity(id, lastData[id]));
 }
 
 async function refreshAll() {
-  applyStaticLang();
+  applyToggleLabels();
   await Promise.all(CITIES.map(async c => {
     try {
       const d = await fetchCity(c);
@@ -1448,76 +1493,43 @@ async function refreshAll() {
   }));
 }
 
-/* ============================================================
-   TOGGLES
-   ============================================================ */
 function setLang(lang) {
   if (lang === currentLang) return;
   currentLang = lang;
   localStorage.setItem('weather-lang', lang);
   if (Object.keys(lastData).length === CITIES.length) renderAllFromCache();
-  else applyStaticLang();
-  flashFade();
+  else applyToggleLabels();
 }
 function setMode(mode) {
   if (mode === currentMode) return;
   currentMode = mode;
   localStorage.setItem('weather-mode', mode);
   if (Object.keys(lastData).length === CITIES.length) renderAllFromCache();
-  else applyStaticLang();
-  flashFade();
-}
-function flashFade() {
-  document.querySelectorAll('.card').forEach(c => {
-    c.classList.remove('lang-fade');
-    void c.offsetWidth;
-    c.classList.add('lang-fade');
-  });
+  else applyToggleLabels();
 }
 
-/* ============================================================
-   LIVE LOCAL CLOCKS — each city shows its own local time
-   ============================================================ */
-function updateClocks() {
-  const t = I18N[currentLang];
-  const now = new Date();
-  for (const city of CITIES) {
-    const el = document.getElementById(`clock-${city.id}`);
-    if (!el) continue;
-    /* Use Intl.DateTimeFormat with the city's IANA timezone — gives the
-       correct local time regardless of where the viewer is located */
-    try {
-      const localTime = now.toLocaleTimeString(t.locale, {
-        timeZone: city.tz,
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: false
-      });
-      el.textContent = localTime;
-    } catch (e) {
-      el.textContent = '--:--';
-    }
-  }
-}
-
-/* ============================================================
-   INIT
-   ============================================================ */
-applyStaticLang();
-refreshAll();
-updateClocks();
-setInterval(refreshAll, 10 * 60 * 1000);
-setInterval(updateClocks, 30 * 1000);
-document.addEventListener('visibilitychange', () => {
-  if (!document.hidden) { refreshAll(); updateClocks(); }
+document.querySelectorAll('#lang-toggle button').forEach(b => {
+  b.addEventListener('click', () => setLang(b.dataset.lang));
+});
+document.querySelectorAll('#mode-toggle button').forEach(b => {
+  b.addEventListener('click', () => setMode(b.dataset.mode));
 });
 
-/* Strip the .card-enter class once the staggered entrance animation has
-   fully finished. This prevents the entrance animation from interfering
-   with subsequent .lang-fade animations on toggle clicks. */
-setTimeout(() => {
-  document.querySelectorAll('.card-enter').forEach(c => c.classList.remove('card-enter'));
-}, 1500);
+applyToggleLabels();
+refreshAll();
+setInterval(refreshAll, 10 * 60 * 1000);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) refreshAll(); });
+
+// Clock tick — update only the .city-clock spans every 30 seconds without re-rendering
+function tickClocks() {
+  document.querySelectorAll('.city-clock').forEach(el => {
+    const tz = el.dataset.tz;
+    if (!tz) return;
+    const lt = localTimeFor(tz, currentLang);
+    el.innerHTML = `${lt.time}<span class="clock-tz">${lt.off}</span>`;
+  });
+}
+setInterval(tickClocks, 30 * 1000);
 </script>
 </body>
 </html>
